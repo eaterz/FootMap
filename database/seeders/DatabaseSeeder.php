@@ -23,5 +23,15 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        $this->call([
+            ContinentSeeder::class,
+            CountrySeeder::class,
+            CitySeeder::class,
+            LeagueSeeder::class,
+            StadiumSeeder::class,
+            TeamSeeder::class,
+            UsersTableSeeder::class,
+        ]);
     }
 }
