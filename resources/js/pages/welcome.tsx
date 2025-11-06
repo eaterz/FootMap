@@ -143,11 +143,12 @@ export default function Welcome({
                             className="group flex flex-col items-center gap-12 lg:flex-row"
                         >
                             <div className="flex-1 feature-left opacity-0 -translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 p-12 shadow-xl dark:from-green-900 dark:to-emerald-900">
-                                    <div className="absolute right-0 top-0 h-64 w-64 translate-x-16 -translate-y-16 rounded-full bg-green-200/50 blur-3xl dark:bg-green-800/50"></div>
-                                    <div className="relative flex items-center justify-center">
-                                        <Globe2 className="h-48 w-48 text-green-600 dark:text-green-400" />
-                                    </div>
+                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                    <img
+                                        src="/club_map.jpg"
+                                        alt="Global Football Coverage"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
                             <div className="flex-1 space-y-4 feature-right opacity-0 translate-x-[3rem]">
@@ -186,11 +187,12 @@ export default function Welcome({
                                 </p>
                             </div>
                             <div className="flex-1 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 p-12 shadow-xl dark:from-blue-900 dark:to-cyan-900">
-                                    <div className="absolute left-0 top-0 h-64 w-64 -translate-x-16 -translate-y-16 rounded-full bg-blue-200/50 blur-3xl dark:bg-blue-800/50"></div>
-                                    <div className="relative flex items-center justify-center">
-                                        <MapPin className="h-48 w-48 text-blue-600 dark:text-blue-400" />
-                                    </div>
+                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                    <img
+                                        src="/soccer_stadiums.jpg"
+                                        alt="Soccer Stadiums Map"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -203,16 +205,17 @@ export default function Welcome({
                             className="group flex flex-col items-center gap-12 lg:flex-row"
                         >
                             <div className="flex-1 feature-left opacity-0 -translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 p-12 shadow-xl dark:from-purple-900 dark:to-pink-900">
-                                    <div className="absolute right-0 top-0 h-64 w-64 translate-x-16 -translate-y-16 rounded-full bg-purple-200/50 blur-3xl dark:bg-purple-800/50"></div>
-                                    <div className="relative flex items-center justify-center">
-                                        <Trophy className="h-48 w-48 text-purple-600 dark:text-purple-400" />
-                                    </div>
+                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                    <img
+                                        src="https://images.mlssoccer.com/image/private/t_editorial_landscape_8_desktop_mobile/f_auto/mls-rbny/pagoemp8mybylicujnda.jpg"
+                                        alt="Soccer Team Profile"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
                             <div className="flex-1 space-y-4 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="inline-flex rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
-                                    <Trophy className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                                <div className="inline-flex rounded-lg bg-red-100 p-3 dark:bg-red-900">
+                                    <Trophy className="h-6 w-6 text-red-600 dark:text-red-400" />
                                 </div>
                                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                                     Team Details
@@ -246,11 +249,12 @@ export default function Welcome({
                                 </p>
                             </div>
                             <div className="flex-1 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 p-12 shadow-xl dark:from-orange-900 dark:to-amber-900">
-                                    <div className="absolute left-0 top-0 h-64 w-64 -translate-x-16 -translate-y-16 rounded-full bg-orange-200/50 blur-3xl dark:bg-orange-800/50"></div>
-                                    <div className="relative flex items-center justify-center">
-                                        <Search className="h-48 w-48 text-orange-600 dark:text-orange-400" />
-                                    </div>
+                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                    <img
+                                        src="https://cdn.myportfolio.com/4ac0e3df-29c1-4ae8-b05c-2e96da566030/56af55b4-fa14-4f60-b472-2486fb19354b_rw_1200.jpg?h=13adf80870c40bbfe1eec9088a8b35f4"
+                                        alt="Football Search Illustration"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -263,16 +267,17 @@ export default function Welcome({
                             className="group flex flex-col items-center gap-12 lg:flex-row"
                         >
                             <div className="flex-1 feature-left opacity-0 -translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-100 to-rose-100 p-12 shadow-xl dark:from-red-900 dark:to-rose-900">
-                                    <div className="absolute right-0 top-0 h-64 w-64 translate-x-16 -translate-y-16 rounded-full bg-red-200/50 blur-3xl dark:bg-red-800/50"></div>
-                                    <div className="relative flex items-center justify-center">
-                                        <Users className="h-48 w-48 text-red-600 dark:text-red-400" />
-                                    </div>
+                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                    <img
+                                        src="https://media1.thehungryjpeg.com/thumbs2/ori_3910836_0bn9r74p1cdqlslt845fk86d3cnwurh7tf1y5a4f_football-world-cup-schedule-soccer-calendar-for-matches-in-group-tab.jpg"
+                                        alt="Football Match Schedule"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
                             <div className="flex-1 space-y-4 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="inline-flex rounded-lg bg-red-100 p-3 dark:bg-red-900">
-                                    <Users className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                <div className="inline-flex rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
+                                    <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                                     Upcoming Matches
@@ -306,11 +311,12 @@ export default function Welcome({
                                 </p>
                             </div>
                             <div className="flex-1 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 p-12 shadow-xl dark:from-emerald-900 dark:to-teal-900">
-                                    <div className="absolute left-0 top-0 h-64 w-64 -translate-x-16 -translate-y-16 rounded-full bg-emerald-200/50 blur-3xl dark:bg-emerald-800/50"></div>
-                                    <div className="relative flex items-center justify-center">
-                                        <Trophy className="h-48 w-48 text-emerald-600 dark:text-emerald-400" />
-                                    </div>
+                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                    <img
+                                        src="https://blog.grosvenorcasinos.com/wp-content/uploads/2019/01/Football_Leagues_1stProof.png"
+                                        alt="Football League Pyramid"
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -319,24 +325,12 @@ export default function Welcome({
 
                 <style>{`
           @keyframes slideInLeft {
-            from {
-              opacity: 0;
-              transform: translateX(-3rem);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-3rem); }
+            to { opacity: 1; transform: translateX(0); }
           }
           @keyframes slideInRight {
-            from {
-              opacity: 0;
-              transform: translateX(3rem);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(3rem); }
+            to { opacity: 1; transform: translateX(0); }
           }
           .animate-in .feature-left {
             animation: slideInLeft 0.8s ease-out forwards;
