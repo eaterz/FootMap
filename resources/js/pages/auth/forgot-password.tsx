@@ -1,69 +1,115 @@
-// Components
-import { login } from '@/routes';
-import { email } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import { Spinner } from '@/components/ui/spinner';
+import { login } from '@/routes';
+import { email } from '@/routes/password';
+import { Form, Head } from '@inertiajs/react';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
-        <AuthLayout
-            title="Forgot password"
-            description="Enter your email to receive a password reset link"
-        >
-            <Head title="Forgot password" />
+        <>
+            <Head title="Forgot password">
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link
+                    href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
+                    rel="stylesheet"
+                />
+            </Head>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950">
+                {/* Main Content */}
+                <div className="relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+                        <div className="w-full max-w-md">
+                            {/* Card */}
+                            <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+                                {/* Header */}
+                                <div className="mb-8 text-center">
+                                    <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+                                        Forgot Password
+                                    </h1>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Enter your email to receive a password reset link
+                                    </p>
+                                </div>
 
-            <div className="space-y-6">
-                <Form {...email.form()}>
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    autoComplete="off"
-                                    autoFocus
-                                    placeholder="email@example.com"
-                                />
+                                {/* Status Message */}
+                                {status && (
+                                    <div className="mb-6 rounded-lg bg-green-50 p-4 text-center text-sm font-medium text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                        {status}
+                                    </div>
+                                )}
 
-                                <InputError message={errors.email} />
-                            </div>
+                                {/* Form */}
+                                <Form {...email.form()} className="flex flex-col gap-6">
+                                    {({ processing, errors }) => (
+                                        <>
+                                            <div className="grid gap-5">
+                                                {/* Email Field */}
+                                                <div className="grid gap-2">
+                                                    <Label
+                                                        htmlFor="email"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Email address
+                                                    </Label>
+                                                    <Input
+                                                        id="email"
+                                                        type="email"
+                                                        name="email"
+                                                        required
+                                                        autoFocus
+                                                        tabIndex={1}
+                                                        autoComplete="email"
+                                                        placeholder="email@example.com"
+                                                        className="h-11"
+                                                    />
+                                                    <InputError message={errors.email} />
+                                                </div>
 
-                            <div className="my-6 flex items-center justify-start">
-                                <Button
-                                    className="w-full"
-                                    disabled={processing}
-                                    data-test="email-password-reset-link-button"
-                                >
-                                    {processing && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                {/* Submit Button */}
+                                                <Button
+                                                    type="submit"
+                                                    className="mt-2 h-11 w-full bg-green-600 text-base font-medium hover:bg-green-700"
+                                                    tabIndex={4}
+                                                    disabled={processing}
+                                                    data-test="email-password-reset-link-button"
+                                                >
+                                                    {processing && <Spinner />}
+                                                    Email password reset link
+                                                </Button>
+                                            </div>
+
+                                            {/* Log In Link */}
+                                            <div className="text-center">
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Or, return to{' '}
+                                                    <TextLink
+                                                        href={login()}
+                                                        tabIndex={5}
+                                                        className="font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                                                    >
+                                                        log in
+                                                    </TextLink>
+                                                </p>
+                                            </div>
+                                        </>
                                     )}
-                                    Email password reset link
-                                </Button>
+                                </Form>
                             </div>
-                        </>
-                    )}
-                </Form>
 
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
+                            {/* Footer Text */}
+                            <p className="mt-8 text-center text-xs text-gray-500 dark:text-gray-500">
+                                By continuing, you agree to our Terms of Service and Privacy Policy
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </AuthLayout>
+        </>
     );
 }
