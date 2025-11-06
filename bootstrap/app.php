@@ -22,8 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
-    })
-    ->withMiddleware(function (Middleware $middleware) {
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
         ]);

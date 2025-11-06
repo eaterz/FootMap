@@ -9,8 +9,10 @@ export default function Welcome({
                                 }: {
     canRegister?: boolean;
 }) {
-    const { auth } = usePage<SharedData>().props;
+    const page = usePage<SharedData>();
+    const auth = page.props?.auth || null; // Safe access
     const featureRefs = useRef<HTMLDivElement[]>([]);
+
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -58,7 +60,7 @@ export default function Welcome({
                 </span>
                             </div>
                             <nav className="flex items-center gap-3">
-                                {auth.user ? (
+                                {auth?.user ? (
                                     <Link
                                         href={dashboard()}
                                         className="rounded-lg border border-green-600 bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
