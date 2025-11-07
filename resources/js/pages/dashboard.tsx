@@ -3,6 +3,8 @@ import Layout from '@/layouts/Layout';
 import { Globe2, MapPin, Search, Trophy } from 'lucide-react';
 
 export default function Dashboard() {
+
+
     // Team logos with consistent SVG URLs from Wikimedia
     const teamLogos = [
         { name: 'Manchester United', logo: 'https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg' },

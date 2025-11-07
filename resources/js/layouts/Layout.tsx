@@ -43,8 +43,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center">
-                                <img src="/footmap.png" alt="FootMap" className="h-full w-full" />
+                            <div className="flex h-1/7 w-1/7 items-center justify-center rounded-lg ">
+                                <img src="/footmap.png" alt="" />
                             </div>
                             <span className="text-xl font-semibold text-gray-900 dark:text-white">
                                 FootMap

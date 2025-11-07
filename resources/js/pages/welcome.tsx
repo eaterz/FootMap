@@ -2,7 +2,7 @@ import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Globe2, MapPin, Search, Trophy, Users } from 'lucide-react';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 
 export default function Welcome({
                                     canRegister = true,
@@ -12,6 +12,11 @@ export default function Welcome({
     const page = usePage<SharedData>();
     const auth = page.props?.auth || null; // Safe access
     const featureRefs = useRef<HTMLDivElement[]>([]);
+
+    const dashboardUrl = useMemo(() => {
+        if (!auth.user) return dashboard();
+        return auth.user.role === 'admin' ? '/admin/dashboard' : dashboard();
+    }, [auth.user]);
 
 
     useEffect(() => {
@@ -56,13 +61,13 @@ export default function Welcome({
                                     <img src="/footmap.png" alt="" />
                                 </div>
                                 <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                  FootMap
-                </span>
+                                    FootMap
+                                </span>
                             </div>
                             <nav className="flex items-center gap-3">
                                 {auth?.user ? (
                                     <Link
-                                        href={dashboard()}
+                                        href={dashboardUrl}
                                         className="rounded-lg border border-green-600 bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
                                     >
                                         Dashboard
