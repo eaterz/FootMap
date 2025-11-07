@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->string('name', 100);
             $table->string('logo')->nullable();
+            $table->date('founded_year')->nullable();
+            $table->text('description')->nullable();
+            $table->timestamps();
         });
     }
 
