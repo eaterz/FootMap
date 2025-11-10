@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ChevronLeft, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
@@ -8,22 +8,34 @@ interface Country {
     name: string;
 }
 
+interface League {
+    id: number;
+    name: string;
+    country_id: number;
+    logo: string | null;
+    logo_path: string | null;
+    founded_year: string | null;
+    description: string | null;
+}
+
 interface Props {
+    league: League;
     countries: Country[];
 }
 
-export default function Create({ countries }: Props) {
+export default function Edit({ league, countries }: Props) {
     const [formData, setFormData] = useState({
-        country_id: '',
-        name: '',
+        country_id: league.country_id.toString(),
+        name: league.name,
         logo: null as File | null,
-        founded_year: '',
-        description: '',
+        founded_year: league.founded_year || '',
+        description: league.description || '',
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(league.logo);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [logoChanged, setLogoChanged] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -51,6 +63,7 @@ export default function Create({ countries }: Props) {
 
             setFormData(prev => ({ ...prev, logo: file }));
             setErrors(prev => ({ ...prev, logo: '' }));
+            setLogoChanged(true);
 
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -63,6 +76,7 @@ export default function Create({ countries }: Props) {
     const removeLogo = () => {
         setFormData(prev => ({ ...prev, logo: null }));
         setLogoPreview(null);
+        setLogoChanged(true);
         setErrors(prev => ({ ...prev, logo: '' }));
     };
 
@@ -72,30 +86,45 @@ export default function Create({ countries }: Props) {
         setIsSubmitting(true);
 
         try {
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
             const data = new FormData();
+            data.append('_method', 'PUT'); // Laravel method spoofing
             data.append('country_id', formData.country_id);
             data.append('name', formData.name);
-            if (formData.logo) {
-                data.append('logo', formData.logo);
+
+            // Only append logo if it was changed
+            if (logoChanged) {
+                if (formData.logo) {
+                    data.append('logo', formData.logo);
+                } else {
+                    data.append('remove_logo', '1');
+                }
             }
+
             data.append('founded_year', formData.founded_year);
             data.append('description', formData.description);
 
-            await axios.post('/admin/leagues', data, {
+            await axios.post(`/admin/leagues/${league.id}`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             });
 
             // Success - redirect to leagues index
             window.location.href = '/admin/leagues';
         } catch (error: any) {
-            if (error.response?.data?.errors) {
+            console.error('Submit error:', error);
+            if (error.response?.status === 422 && error.response?.data?.errors) {
+                // Laravel validation errors
                 setErrors(error.response.data.errors);
             } else if (error.response?.data?.message) {
                 setErrors({ submit: error.response.data.message });
             } else {
-                setErrors({ submit: 'An error occurred while creating the league. Please try again.' });
+                setErrors({ submit: 'An error occurred while updating the league. Please try again.' });
             }
         } finally {
             setIsSubmitting(false);
@@ -104,7 +133,7 @@ export default function Create({ countries }: Props) {
 
     return (
         <>
-            <Head title="Create League" />
+            <Head title={`Edit ${league.name}`} />
 
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950 p-6">
                 <div className="mx-auto max-w-4xl">
@@ -117,8 +146,8 @@ export default function Create({ countries }: Props) {
                             <ChevronLeft className="h-4 w-4" />
                             Back to Leagues
                         </a>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create New League</h1>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Add a new league to your sports management system</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit League</h1>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Update league information</p>
                     </div>
 
                     {/* Global Error Message */}
@@ -132,8 +161,8 @@ export default function Create({ countries }: Props) {
                         <form onSubmit={handleSubmit} className="p-8">
                             <div className="space-y-8">
                                 {/* Logo Upload Section */}
-                                <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 bg-gray-50 dark:bg-gray-700/50">
-                                    <div className="text-center">
+                                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 bg-gray-50 dark:bg-gray-700/50">
+                                    <div className="text-center mb-4">
                                         {logoPreview ? (
                                             <div className="relative inline-block">
                                                 <img
@@ -159,7 +188,7 @@ export default function Create({ countries }: Props) {
                                                     className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
                                                 >
                                                     <Upload className="h-4 w-4" />
-                                                    Upload Logo
+                                                    Upload New Logo
                                                 </label>
                                                 <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">PNG, JPG up to 5MB</p>
                                             </div>
@@ -173,8 +202,14 @@ export default function Create({ countries }: Props) {
                                             className="hidden"
                                             disabled={isSubmitting}
                                         />
-                                        {errors.logo && <p className="mt-2 text-sm text-red-600">{errors.logo}</p>}
                                     </div>
+                                    {errors.logo && <p className="text-center text-sm text-red-600 mb-2">{errors.logo}</p>}
+
+                                    {logoChanged && (
+                                        <div className="text-center text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 rounded px-2 py-1">
+                                            Logo will be updated when you save
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Form Grid */}
@@ -277,10 +312,10 @@ export default function Create({ countries }: Props) {
                                     {isSubmitting ? (
                                         <>
                                             <Loader2 className="h-4 w-4 animate-spin" />
-                                            Creating...
+                                            Updating...
                                         </>
                                     ) : (
-                                        'Create League'
+                                        'Update League'
                                     )}
                                 </button>
                             </div>

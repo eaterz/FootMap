@@ -15,7 +15,7 @@ class LeagueSeeder extends Seeder
     {
         DB::table('leagues')->insert([
             [
-                'country_id' => 1,
+                'country_id' => 118, // England
                 'name' => 'Premier League',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/1200px-Premier_League_Logo.svg.png',
                 'founded_year' => '1992-02-20',
@@ -24,7 +24,7 @@ class LeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 2,
+                'country_id' => 162, // Spain
                 'name' => 'La Liga',
                 'logo' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ157bazeHVrTqhMy5hl5HR2-_81U0PoQOnnw&s',
                 'founded_year' => '1929-01-01',
@@ -33,7 +33,7 @@ class LeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 3,
+                'country_id' => 124, // Germany
                 'name' => 'Bundesliga',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/lv/d/df/Bundesliga_logo_%282017%29.svg',
                 'founded_year' => '1962-01-01',
@@ -42,7 +42,7 @@ class LeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 4,
+                'country_id' => 132, // Italy
                 'name' => 'Serie A',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Serie_A.svg/966px-Serie_A.svg.png',
                 'founded_year' => '1898-01-01',
@@ -51,7 +51,7 @@ class LeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 5,
+                'country_id' => 122, // France
                 'name' => 'Ligue 1',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Logo_Ligue_1_McDonald%27s_2024.svg',
                 'founded_year' => '1932-09-11',
@@ -60,7 +60,7 @@ class LeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 6,
+                'country_id' => 186, // Brazil
                 'name' => 'Campeonato Brasileiro Série A',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Logo_-_Brasileir%C3%A3o_Serie_A_%282024%29.svg/930px-Logo_-_Brasileir%C3%A3o_Serie_A_%282024%29.svg.png',
                 'founded_year' => '1971-01-01',
@@ -69,7 +69,7 @@ class LeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 7,
+                'country_id' => 183, // Argentina
                 'name' => 'Primera División',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Logo_Primera_Divisi%C3%B3n_de_El_Salvador.jpg/250px-Logo_Primera_Divisi%C3%B3n_de_El_Salvador.jpg',
                 'founded_year' => '1891-04-12',

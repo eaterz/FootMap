@@ -7,6 +7,7 @@ use App\Models\League;
 use App\Models\Country;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,10 +22,22 @@ class LeagueController extends Controller
             ->latest()
             ->paginate(10)
             ->through(function ($league) {
+                // Check if logo is a file path or URL
+                $logoUrl = null;
+                if ($league->logo) {
+                    if (filter_var($league->logo, FILTER_VALIDATE_URL)) {
+                        // It's a URL
+                        $logoUrl = $league->logo;
+                    } else {
+                        // It's a file path
+                        $logoUrl = Storage::url($league->logo);
+                    }
+                }
+
                 return [
                     'id' => $league->id,
                     'name' => $league->name,
-                    'logo' => $league->logo,
+                    'logo' => $logoUrl,
                     'founded_year' => $league->founded_year?->format('Y'),
                     'description' => $league->description,
                     'country' => $league->country?->name,
@@ -57,10 +70,15 @@ class LeagueController extends Controller
         $validated = $request->validate([
             'country_id' => 'required|exists:countries,id',
             'name' => 'required|string|max:100',
-            'logo' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // 5MB max
             'founded_year' => 'nullable|date',
             'description' => 'nullable|string',
         ]);
+
+        // Handle file upload
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('leagues/logos', 'public');
+        }
 
         League::create($validated);
 
@@ -78,7 +96,7 @@ class LeagueController extends Controller
             'league' => [
                 'id' => $league->id,
                 'name' => $league->name,
-                'logo' => $league->logo,
+                'logo' => $league->logo ? Storage::url($league->logo) : null,
                 'founded_year' => $league->founded_year?->format('Y'),
                 'description' => $league->description,
                 'country' => $league->country?->name,
@@ -96,7 +114,15 @@ class LeagueController extends Controller
         $countries = Country::select('id', 'name')->orderBy('name')->get();
 
         return Inertia::render('admin/leagues/edit', [
-            'league' => $league,
+            'league' => [
+                'id' => $league->id,
+                'name' => $league->name,
+                'country_id' => $league->country_id,
+                'logo' => $league->logo ? Storage::url($league->logo) : null,
+                'logo_path' => $league->logo, // Keep original path for deletion
+                'founded_year' => $league->founded_year?->format('Y-m-d'),
+                'description' => $league->description,
+            ],
             'countries' => $countries,
         ]);
     }
@@ -109,10 +135,19 @@ class LeagueController extends Controller
         $validated = $request->validate([
             'country_id' => 'required|exists:countries,id',
             'name' => 'required|string|max:100',
-            'logo' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'founded_year' => 'nullable|date',
             'description' => 'nullable|string',
         ]);
+
+        // Handle file upload
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($league->logo) {
+                Storage::disk('public')->delete($league->logo);
+            }
+            $validated['logo'] = $request->file('logo')->store('leagues/logos', 'public');
+        }
 
         $league->update($validated);
 
@@ -124,6 +159,11 @@ class LeagueController extends Controller
      */
     public function destroy(League $league): RedirectResponse
     {
+        // Delete logo file if exists
+        if ($league->logo) {
+            Storage::disk('public')->delete($league->logo);
+        }
+
         $league->delete();
 
         return redirect()->route('admin.leagues.index')->with('success', 'League deleted successfully.');

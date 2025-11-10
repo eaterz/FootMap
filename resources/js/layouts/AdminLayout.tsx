@@ -42,14 +42,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-1/7 w-1/7 items-center justify-center rounded-lg ">
-                                <img src="/footmap.png" alt="" />
+                        <Link
+                            href="/admin/dashboard"
+                            className="flex items-center gap-3 transition-transform hover:scale-105"
+                        >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden">
+                                <img
+                                    src="/footmap.png"
+                                    alt="FootMap Logo"
+                                    className="h-full w-full object-contain"
+                                />
                             </div>
                             <span className="text-xl font-semibold text-gray-900 dark:text-white">
                                 FootMap
                             </span>
-                        </div>
+                        </Link>
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex md:items-center md:gap-6">
@@ -60,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                 Teams
                             </Link>
                             <Link
-                                href="#"
+                                href="/admin/stadiums"
                                 className="text-sm font-medium text-gray-700 transition-colors hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
                             >
                                 Stadiums

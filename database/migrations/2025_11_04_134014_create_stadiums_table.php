@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('stadiums', function (Blueprint $table) {
             $table->id();
             $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
-            $table->foreignId('city_id')->constrained('cities')->cascadeOnDelete();
+            $table->string('city', 100);
             $table->string('name', 100);
             $table->decimal('latitude', 10, 8);
             $table->decimal('longitude', 11, 8);
             $table->integer('capacity')->nullable();
+            $table->string('image')->nullable();
+            $table->timestamps();
         });
     }
 

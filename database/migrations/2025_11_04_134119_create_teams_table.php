@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('logo');
             $table->date('founded_year');
             $table->string('website', 250)->nullable();
+            $table->timestamps();
         });
     }
 
