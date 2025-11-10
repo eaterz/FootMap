@@ -20,7 +20,7 @@ class StadiumSeeder extends Seeder
         DB::table('stadiums')->insert([
             [
                 'country_id' => 1,
-                'city_id' => 1,
+                'city' => "London",
                 'name' => 'Wembley Stadium',
                 'latitude' => 51.5560,
                 'longitude' => -0.2795,
@@ -28,7 +28,7 @@ class StadiumSeeder extends Seeder
             ],
             [
                 'country_id' => 1,
-                'city_id' => 2,
+                'city' => "Manchester",
                 'name' => 'Old Trafford',
                 'latitude' => 53.4631,
                 'longitude' => -2.2913,
@@ -36,7 +36,7 @@ class StadiumSeeder extends Seeder
             ],
             [
                 'country_id' => 1,
-                'city_id' => 3,
+                'city' => "Liverpool",
                 'name' => 'Anfield',
                 'latitude' => 53.4308,
                 'longitude' => -2.9608,
@@ -44,7 +44,7 @@ class StadiumSeeder extends Seeder
             ],
             [
                 'country_id' => 2,
-                'city_id' => 4,
+                'city' => "Madrid",
                 'name' => 'Santiago Bernabéu',
                 'latitude' => 40.4531,
                 'longitude' => -3.6883,
@@ -52,7 +52,7 @@ class StadiumSeeder extends Seeder
             ],
             [
                 'country_id' => 2,
-                'city_id' => 5,
+                'city' => "Barcelona",
                 'name' => 'Camp Nou',
                 'latitude' => 41.3809,
                 'longitude' => 2.1228,
@@ -60,7 +60,7 @@ class StadiumSeeder extends Seeder
             ],
             [
                 'country_id' => 3,
-                'city_id' => 6,
+                'city' => "Munich",
                 'name' => 'Allianz Arena',
                 'latitude' => 48.2188,
                 'longitude' => 11.6247,

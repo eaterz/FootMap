@@ -11,11 +11,12 @@ class Stadium extends Model
 
     protected $fillable = [
         'country_id',
-        'city_id',
+        'city',
         'name',
         'latitude',
         'longitude',
         'capacity',
+        'image',
     ];
 
     protected $casts = [
@@ -29,10 +30,6 @@ class Stadium extends Model
         return $this->belongsTo(Country::class);
     }
 
-    public function city()
-    {
-        return $this->belongsTo(City::class);
-    }
 
     public function teams()
     {
