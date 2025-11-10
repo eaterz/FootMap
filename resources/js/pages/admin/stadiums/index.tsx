@@ -120,10 +120,10 @@ export default function Index({ stadiums }: Props) {
                     <div className="mb-6">
                         <input
                             type="text"
-                            placeholder="Search by name, country or city..."
+                            placeholder="🔍 Search by name, country or city..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-green-400"
+                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors"
                         />
                     </div>
 

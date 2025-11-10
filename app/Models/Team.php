@@ -34,6 +34,13 @@ class Team extends Model
 
     public function country()
     {
-        return $this->hasOneThrough(Country::class, League::class, 'country_id', 'id', 'league_id', 'id');
+        return $this->hasOneThrough(
+            Country::class,
+            League::class,
+            'id',
+            'id',
+            'league_id',
+            'country_id'
+        );
     }
 }

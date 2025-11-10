@@ -1,48 +1,58 @@
-import { Head } from '@inertiajs/react';
-import { ChevronLeft, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ChevronLeft, Upload, X, Image as ImageIcon, Loader2, Trophy, MapPin, Calendar, Globe } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
-
-interface Country {
-    id: number;
-    name: string;
-}
 
 interface League {
     id: number;
     name: string;
-    country_id: number;
+    country: string;
+}
+
+interface Stadium {
+    id: number;
+    name: string;
+    city: string;
+    country: string;
+}
+
+interface Team {
+    id: number;
+    name: string;
+    league_id: number;
+    stadium_id: number;
     logo: string | null;
     logo_path: string | null;
     founded_year: string | null;
-    description: string | null;
+    website: string | null;
 }
 
 interface Props {
-    league: League;
-    countries: Country[];
+    team: Team;
+    leagues: League[];
+    stadiums: Stadium[];
 }
 
-export default function Edit({ league, countries }: Props) {
-    const initialYear = league.founded_year ? league.founded_year.split('-')[0] : '';
+export default function Edit({ team, leagues, stadiums }: Props) {
+    const initialYear = team.founded_year ? team.founded_year.split('-')[0] : '';
 
     const [formData, setFormData] = useState({
-        country_id: league.country_id.toString(),
-        name: league.name,
+        league_id: team.league_id.toString(),
+        stadium_id: team.stadium_id.toString(),
+        name: team.name,
         logo: null as File | null,
         founded_year: initialYear,
-        description: league.description || '',
+        website: team.website || '',
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [logoPreview, setLogoPreview] = useState<string | null>(league.logo);
+    const [logoPreview, setLogoPreview] = useState<string | null>(team.logo);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [logoChanged, setLogoChanged] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        // Clear error for this field when user starts typing
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -51,22 +61,17 @@ export default function Edit({ league, countries }: Props) {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Validate file size (5MB max)
             if (file.size > 5 * 1024 * 1024) {
                 setErrors(prev => ({ ...prev, logo: 'File size must be less than 5MB' }));
                 return;
             }
-
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 setErrors(prev => ({ ...prev, logo: 'Please upload an image file' }));
                 return;
             }
-
             setFormData(prev => ({ ...prev, logo: file }));
             setErrors(prev => ({ ...prev, logo: '' }));
             setLogoChanged(true);
-
             const reader = new FileReader();
             reader.onloadend = () => {
                 setLogoPreview(reader.result as string);
@@ -88,15 +93,14 @@ export default function Edit({ league, countries }: Props) {
         setIsSubmitting(true);
 
         try {
-            // Get CSRF token from meta tag
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
             const data = new FormData();
-            data.append('_method', 'PUT'); // Laravel method spoofing
-            data.append('country_id', formData.country_id);
+            data.append('_method', 'PUT');
+            data.append('league_id', formData.league_id);
+            data.append('stadium_id', formData.stadium_id);
             data.append('name', formData.name);
 
-            // Only append logo if it was changed
             if (logoChanged) {
                 if (formData.logo) {
                     data.append('logo', formData.logo);
@@ -110,9 +114,9 @@ export default function Edit({ league, countries }: Props) {
                 foundedYear = `${foundedYear}-01-01`;
             }
             data.append('founded_year', foundedYear);
-            data.append('description', formData.description);
+            data.append('website', formData.website);
 
-            await axios.post(`/admin/leagues/${league.id}`, data, {
+            await axios.post(`/admin/teams/${team.id}`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'X-CSRF-TOKEN': csrfToken || '',
@@ -120,40 +124,56 @@ export default function Edit({ league, countries }: Props) {
                 },
             });
 
-            // Success - redirect to leagues index
-            window.location.href = '/admin/leagues';
+            window.location.href = '/admin/teams';
         } catch (error: any) {
             console.error('Submit error:', error);
             if (error.response?.status === 422 && error.response?.data?.errors) {
-                // Laravel validation errors
                 setErrors(error.response.data.errors);
             } else if (error.response?.data?.message) {
                 setErrors({ submit: error.response.data.message });
             } else {
-                setErrors({ submit: 'An error occurred while updating the league. Please try again.' });
+                setErrors({ submit: 'An error occurred while updating the team. Please try again.' });
             }
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    // Group stadiums by country
+    const stadiumsByCountry = stadiums.reduce((acc, stadium) => {
+        if (!acc[stadium.country]) {
+            acc[stadium.country] = [];
+        }
+        acc[stadium.country].push(stadium);
+        return acc;
+    }, {} as Record<string, Stadium[]>);
+
+    // Group leagues by country
+    const leaguesByCountry = leagues.reduce((acc, league) => {
+        if (!acc[league.country]) {
+            acc[league.country] = [];
+        }
+        acc[league.country].push(league);
+        return acc;
+    }, {} as Record<string, League[]>);
+
     return (
         <>
-            <Head title={`Edit ${league.name}`} />
+            <Head title={`Edit ${team.name}`} />
 
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950 p-6">
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-green-950 p-6">
                 <div className="mx-auto max-w-4xl">
                     {/* Header */}
                     <div className="mb-8">
                         <a
-                            href="/admin/leagues"
+                            href="/admin/teams"
                             className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors mb-4"
                         >
                             <ChevronLeft className="h-4 w-4" />
-                            Back to Leagues
+                            Back to Teams
                         </a>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit League</h1>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Update league information</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Team</h1>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Update team information</p>
                     </div>
 
                     {/* Global Error Message */}
@@ -219,10 +239,10 @@ export default function Edit({ league, countries }: Props) {
 
                                 {/* Form Grid */}
                                 <div className="grid gap-6 md:grid-cols-2">
-                                    {/* Name */}
+                                    {/* Team Name */}
                                     <div className="md:col-span-2">
                                         <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                            League Name <span className="text-red-500">*</span>
+                                            Team Name <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             id="name"
@@ -230,7 +250,7 @@ export default function Edit({ league, countries }: Props) {
                                             type="text"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            placeholder="e.g., Premier League"
+                                            placeholder="e.g., Manchester United"
                                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             required
                                             disabled={isSubmitting}
@@ -238,34 +258,66 @@ export default function Edit({ league, countries }: Props) {
                                         {errors.name && <p className="mt-1.5 text-sm text-red-600">{errors.name}</p>}
                                     </div>
 
-                                    {/* Country */}
+                                    {/* League */}
                                     <div>
-                                        <label htmlFor="country_id" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                            Country <span className="text-red-500">*</span>
+                                        <label htmlFor="league_id" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            <Trophy className="inline h-4 w-4 mr-1" /> League <span className="text-red-500">*</span>
                                         </label>
                                         <select
-                                            id="country_id"
-                                            name="country_id"
-                                            value={formData.country_id}
+                                            id="league_id"
+                                            name="league_id"
+                                            value={formData.league_id}
                                             onChange={handleChange}
                                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             required
                                             disabled={isSubmitting}
                                         >
-                                            <option value="">Select a country</option>
-                                            {countries.map(country => (
-                                                <option key={country.id} value={country.id}>
-                                                    {country.name}
-                                                </option>
+                                            <option value="">Select a league</option>
+                                            {Object.entries(leaguesByCountry).map(([country, countryLeagues]) => (
+                                                <optgroup key={country} label={country}>
+                                                    {countryLeagues.map(league => (
+                                                        <option key={league.id} value={league.id}>
+                                                            {league.name}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
                                             ))}
                                         </select>
-                                        {errors.country_id && <p className="mt-1.5 text-sm text-red-600">{errors.country_id}</p>}
+                                        {errors.league_id && <p className="mt-1.5 text-sm text-red-600">{errors.league_id}</p>}
+                                    </div>
+
+                                    {/* Stadium */}
+                                    <div>
+                                        <label htmlFor="stadium_id" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            <MapPin className="inline h-4 w-4 mr-1" /> Stadium <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            id="stadium_id"
+                                            name="stadium_id"
+                                            value={formData.stadium_id}
+                                            onChange={handleChange}
+                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            required
+                                            disabled={isSubmitting}
+                                        >
+                                            <option value="">Select a stadium</option>
+                                            {Object.entries(stadiumsByCountry).map(([country, countryStadiums]) => (
+                                                <optgroup key={country} label={country}>
+                                                    {countryStadiums.map(stadium => (
+                                                        <option key={stadium.id} value={stadium.id}>
+                                                            {stadium.name} ({stadium.city})
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            ))}
+                                        </select>
+                                        {errors.stadium_id && <p className="mt-1.5 text-sm text-red-600">{errors.stadium_id}</p>}
                                     </div>
 
                                     {/* Founded Year */}
                                     <div>
                                         <label htmlFor="founded_year" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                            Founded Year
+                                            <Calendar className="inline h-4 w-4 mr-1" /> Founded Year <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             id="founded_year"
@@ -276,29 +328,30 @@ export default function Edit({ league, countries }: Props) {
                                             step="1"
                                             value={formData.founded_year}
                                             onChange={handleChange}
-                                            placeholder="e.g., 1992"
+                                            placeholder="e.g., 1878"
                                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            required
                                             disabled={isSubmitting}
                                         />
                                         {errors.founded_year && <p className="mt-1.5 text-sm text-red-600">{errors.founded_year}</p>}
                                     </div>
 
-                                    {/* Description */}
-                                    <div className="md:col-span-2">
-                                        <label htmlFor="description" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                            Description
+                                    {/* Website */}
+                                    <div>
+                                        <label htmlFor="website" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            <Globe className="inline h-4 w-4 mr-1" /> Website
                                         </label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            value={formData.description}
+                                        <input
+                                            id="website"
+                                            name="website"
+                                            type="url"
+                                            value={formData.website}
                                             onChange={handleChange}
-                                            rows={5}
-                                            placeholder="Write a brief description about the league..."
-                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                            placeholder="https://example.com"
+                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={isSubmitting}
                                         />
-                                        {errors.description && <p className="mt-1.5 text-sm text-red-600">{errors.description}</p>}
+                                        {errors.website && <p className="mt-1.5 text-sm text-red-600">{errors.website}</p>}
                                     </div>
                                 </div>
                             </div>
@@ -306,7 +359,7 @@ export default function Edit({ league, countries }: Props) {
                             {/* Form Actions */}
                             <div className="mt-8 flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
                                 <a
-                                    href="/admin/leagues"
+                                    href="/admin/teams"
                                     className={`rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${
                                         isSubmitting ? 'opacity-50 pointer-events-none' : ''
                                     }`}
@@ -324,7 +377,7 @@ export default function Edit({ league, countries }: Props) {
                                             Updating...
                                         </>
                                     ) : (
-                                        'Update League'
+                                        'Update Team'
                                     )}
                                 </button>
                             </div>

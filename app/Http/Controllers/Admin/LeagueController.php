@@ -13,31 +13,16 @@ use Inertia\Response;
 
 class LeagueController extends Controller
 {
-    /**
-     * Display a listing of the leagues.
-     */
     public function index(): Response
     {
         $leagues = League::with('country')
             ->latest()
             ->paginate(10)
             ->through(function ($league) {
-                // Check if logo is a file path or URL
-                $logoUrl = null;
-                if ($league->logo) {
-                    if (filter_var($league->logo, FILTER_VALIDATE_URL)) {
-                        // It's a URL
-                        $logoUrl = $league->logo;
-                    } else {
-                        // It's a file path
-                        $logoUrl = Storage::url($league->logo);
-                    }
-                }
-
                 return [
                     'id' => $league->id,
                     'name' => $league->name,
-                    'logo' => $logoUrl,
+                    'logo' => $league->logo,
                     'founded_year' => $league->founded_year?->format('Y'),
                     'description' => $league->description,
                     'country' => $league->country?->name,
@@ -50,9 +35,6 @@ class LeagueController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new league.
-     */
     public function create(): Response
     {
         $countries = Country::select('id', 'name')->orderBy('name')->get();
@@ -62,9 +44,6 @@ class LeagueController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created league in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -85,9 +64,6 @@ class LeagueController extends Controller
         return redirect()->route('admin.leagues.index')->with('success', 'League created successfully.');
     }
 
-    /**
-     * Display the specified league.
-     */
     public function show(League $league): Response
     {
         $league->load('country');
@@ -106,9 +82,6 @@ class LeagueController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified league.
-     */
     public function edit(League $league): Response
     {
         $countries = Country::select('id', 'name')->orderBy('name')->get();
@@ -127,9 +100,6 @@ class LeagueController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified league in storage.
-     */
     public function update(Request $request, League $league): RedirectResponse
     {
         $validated = $request->validate([
@@ -154,9 +124,6 @@ class LeagueController extends Controller
         return redirect()->route('admin.leagues.index')->with('success', 'League updated successfully.');
     }
 
-    /**
-     * Remove the specified league from storage.
-     */
     public function destroy(League $league): RedirectResponse
     {
         // Delete logo file if exists

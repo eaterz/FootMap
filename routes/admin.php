@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeagueController;
 use App\Http\Controllers\Admin\StadiumController;
+use App\Http\Controllers\Admin\TeamController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -11,4 +12,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('leagues', LeagueController::class);
     //stadiums
     Route::resource('stadiums', StadiumController::class);
+    //teams
+    Route::resource('teams', TeamController::class);
 });

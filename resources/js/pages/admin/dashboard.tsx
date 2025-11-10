@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
 import { Users, Shield, Database, Activity, MapPin, Globe2, Trophy } from 'lucide-react';
 
@@ -277,32 +277,41 @@ export default function AdminDashboard({ stats, recent_teams, teams_by_country, 
                             Quick Actions
                         </h2>
                         <div className="space-y-3">
-                            <button className="w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+                            <Link
+                                href="/admin/teams/create"
+                                className="block w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+                            >
                                 <h3 className="font-medium text-gray-900 dark:text-white">
                                     Add New Team
                                 </h3>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     Create a new football team
                                 </p>
-                            </button>
+                            </Link>
 
-                            <button className="w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+                            <Link
+                                href="/admin/stadiums/create"
+                                className="block w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+                            >
                                 <h3 className="font-medium text-gray-900 dark:text-white">
                                     Add Stadium
                                 </h3>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     Register a new stadium
                                 </p>
-                            </button>
+                            </Link>
 
-                            <button className="w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+                            <Link
+                                href="/admin/users"
+                                className="block w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+                            >
                                 <h3 className="font-medium text-gray-900 dark:text-white">
                                     Manage Users
                                 </h3>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     View and manage users
                                 </p>
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

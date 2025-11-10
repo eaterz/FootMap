@@ -12,9 +12,7 @@ use Inertia\Response;
 
 class StadiumController extends Controller
 {
-    /**
-     * Display a listing of the stadiums.
-     */
+
     public function index(): Response
     {
         $stadiums = Stadium::with('country')
@@ -39,9 +37,6 @@ class StadiumController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new stadium.
-     */
     public function create(): Response
     {
         $countries = Country::select('id', 'name')->orderBy('name')->get();
@@ -51,9 +46,6 @@ class StadiumController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created stadium in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -76,9 +68,6 @@ class StadiumController extends Controller
         return redirect()->route('admin.stadiums.index')->with('success', 'Stadium created successfully.');
     }
 
-    /**
-     * Display the specified stadium.
-     */
     public function show(Stadium $stadium): Response
     {
         $stadium->load('country');
@@ -99,9 +88,6 @@ class StadiumController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified stadium.
-     */
     public function edit(Stadium $stadium): Response
     {
         $countries = Country::select('id', 'name')->orderBy('name')->get();
@@ -112,9 +98,6 @@ class StadiumController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified stadium in storage.
-     */
     public function update(Request $request, Stadium $stadium): RedirectResponse
     {
         $validated = $request->validate([
@@ -141,9 +124,6 @@ class StadiumController extends Controller
         return redirect()->route('admin.stadiums.index')->with('success', 'Stadium updated successfully.');
     }
 
-    /**
-     * Remove the specified stadium from storage.
-     */
     public function destroy(Stadium $stadium): RedirectResponse
     {
         $stadium->delete();

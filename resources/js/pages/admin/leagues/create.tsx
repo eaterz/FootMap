@@ -78,7 +78,11 @@ export default function Create({ countries }: Props) {
             if (formData.logo) {
                 data.append('logo', formData.logo);
             }
-            data.append('founded_year', formData.founded_year);
+            let foundedYear = formData.founded_year;
+            if (foundedYear) {
+                foundedYear = `${foundedYear}-01-01`;
+            }
+            data.append('founded_year', foundedYear);
             data.append('description', formData.description);
 
             await axios.post('/admin/leagues', data, {
@@ -230,10 +234,14 @@ export default function Create({ countries }: Props) {
                                         <input
                                             id="founded_year"
                                             name="founded_year"
-                                            type="date"
+                                            type="number"
+                                            min="1800"
+                                            max={new Date().getFullYear()}
+                                            step="1"
                                             value={formData.founded_year}
                                             onChange={handleChange}
-                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            placeholder="e.g., 1992"
+                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={isSubmitting}
                                         />
                                         {errors.founded_year && <p className="mt-1.5 text-sm text-red-600">{errors.founded_year}</p>}

@@ -61,7 +61,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex md:items-center md:gap-6">
                             <Link
-                                href="#"
+                                href="/admin/teams"
                                 className="text-sm font-medium text-gray-700 transition-colors hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
                             >
                                 Teams
