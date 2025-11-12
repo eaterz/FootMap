@@ -15,6 +15,7 @@ class League extends Model
         'logo',
         'founded_year',
         'description',
+        'resource_url',
     ];
 
     protected $casts = [

@@ -15,65 +15,72 @@ class LeagueSeeder extends Seeder
     {
         DB::table('leagues')->insert([
             [
-                'country_id' => 118, // England
+                'country_id' => 114, // England
                 'name' => 'Premier League',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/1200px-Premier_League_Logo.svg.png',
                 'founded_year' => '1992-02-20',
                 'description' => 'The top level of the English football league system, contested by 20 clubs.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/Premier_League',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 162, // Spain
+                'country_id' => 150, // Spain
                 'name' => 'La Liga',
                 'logo' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ157bazeHVrTqhMy5hl5HR2-_81U0PoQOnnw&s',
                 'founded_year' => '1929-01-01',
                 'description' => 'The men\'s top professional football division of the Spanish football league system.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/La_Liga',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 124, // Germany
+                'country_id' => 120, // Germany
                 'name' => 'Bundesliga',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/lv/d/df/Bundesliga_logo_%282017%29.svg',
                 'founded_year' => '1962-01-01',
                 'description' => 'A professional association football league in Germany at the top of the German football league system.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/Bundesliga',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 132, // Italy
+                'country_id' => 127, // Italy
                 'name' => 'Serie A',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Serie_A.svg/966px-Serie_A.svg.png',
                 'founded_year' => '1898-01-01',
                 'description' => 'A professional league competition for football clubs located at the top of the Italian football league system.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/Serie_A',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 122, // France
+                'country_id' => 118, // France
                 'name' => 'Ligue 1',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Logo_Ligue_1_McDonald%27s_2024.svg',
                 'founded_year' => '1932-09-11',
                 'description' => 'A French professional league for men\'s association football clubs at the top of the French football league system.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/Ligue_1',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 186, // Brazil
+                'country_id' => 196, // Brazil
                 'name' => 'Campeonato Brasileiro Série A',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Logo_-_Brasileir%C3%A3o_Serie_A_%282024%29.svg/930px-Logo_-_Brasileir%C3%A3o_Serie_A_%282024%29.svg.png',
                 'founded_year' => '1971-01-01',
                 'description' => 'The top tier of the Brazilian football league system, contested by 20 clubs.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/Campeonato_Brasileiro_S%C3%A9rie_A',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'country_id' => 183, // Argentina
+                'country_id' => 194, // Argentina
                 'name' => 'Primera División',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Logo_Primera_Divisi%C3%B3n_de_El_Salvador.jpg/250px-Logo_Primera_Divisi%C3%B3n_de_El_Salvador.jpg',
                 'founded_year' => '1891-04-12',
                 'description' => 'The top division of the Argentine football league system.',
+                'resource_url' => 'https://en.wikipedia.org/wiki/Argentine_Primera_Divisi%C3%B3n',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('continent_id')->constrained('continents')->cascadeOnDelete();
             $table->string('name', 100);
-            $table->string('flag')->nullable();
+            $table->string('flag')->charset('utf8mb4')->nullable();
         });
     }
 

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('logo');
             $table->date('founded_year');
+            $table->text('description')->nullable();
             $table->string('website', 250)->nullable();
             $table->timestamps();
         });

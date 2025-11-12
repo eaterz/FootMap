@@ -25,6 +25,7 @@ class LeagueController extends Controller
                     'logo' => $league->logo,
                     'founded_year' => $league->founded_year?->format('Y'),
                     'description' => $league->description,
+                    'resource_url' => $league->resource_url,
                     'country' => $league->country?->name,
                     'created_at' => $league->created_at?->format('M d, Y'),
                 ];
@@ -52,6 +53,7 @@ class LeagueController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // 5MB max
             'founded_year' => 'nullable|date',
             'description' => 'nullable|string',
+            'resource_url' => 'nullable|url|max:500',
         ]);
 
         // Handle file upload
@@ -75,6 +77,7 @@ class LeagueController extends Controller
                 'logo' => $league->logo ? Storage::url($league->logo) : null,
                 'founded_year' => $league->founded_year?->format('Y'),
                 'description' => $league->description,
+                'resource_url' => $league->resource_url,
                 'country' => $league->country?->name,
                 'created_at' => $league->created_at?->format('M d, Y H:i'),
                 'updated_at' => $league->updated_at?->format('M d, Y H:i'),
@@ -95,6 +98,7 @@ class LeagueController extends Controller
                 'logo_path' => $league->logo, // Keep original path for deletion
                 'founded_year' => $league->founded_year?->format('Y-m-d'),
                 'description' => $league->description,
+                'resource_url' => $league->resource_url,
             ],
             'countries' => $countries,
         ]);
@@ -108,6 +112,7 @@ class LeagueController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'founded_year' => 'nullable|date',
             'description' => 'nullable|string',
+            'resource_url' => 'nullable|url|max:500',
         ]);
 
         // Handle file upload

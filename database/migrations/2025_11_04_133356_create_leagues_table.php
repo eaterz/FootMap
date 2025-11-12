@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->date('founded_year')->nullable();
             $table->text('description')->nullable();
+            $table->string('resource_url', 500)->nullable();
             $table->timestamps();
         });
     }
