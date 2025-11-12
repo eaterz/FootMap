@@ -1,10 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 import Layout from '@/layouts/Layout';
-import { Globe2, MapPin, Search, Trophy } from 'lucide-react';
+import { MapPin, Search, Trophy } from 'lucide-react';
 
 export default function Dashboard() {
-
-
     // Team logos with consistent SVG URLs from Wikimedia
     const teamLogos = [
         { name: 'Manchester United', logo: 'https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg' },
@@ -48,7 +46,6 @@ export default function Dashboard() {
                                             alt={team.name}
                                             className="h-full w-full object-contain"
                                             onError={(e) => {
-                                                // Fallback to emoji if image doesn't load
                                                 e.currentTarget.style.display = 'none';
                                                 e.currentTarget.parentElement!.innerHTML = '⚽';
                                                 e.currentTarget.parentElement!.classList.add('text-7xl');
@@ -62,12 +59,78 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Features Grid */}
+            {/* Features Grid - 4 Features */}
             <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                    {/* Search Teams Feature */}
+                    <Link
+                        href="/teams"
+                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-green-900 dark:to-emerald-900"
+                    >
+                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-green-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-green-800/50"></div>
+                        <div className="relative">
+                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
+                                <Search className="h-8 w-8 text-green-600 dark:text-green-400" />
+                            </div>
+                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                                Search Teams
+                            </h3>
+                            <p className="mb-4 text-gray-700 dark:text-gray-300">
+                                Find and explore football teams from around the world
+                            </p>
+                            <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+                                Search Now <span className="transition-transform group-hover:translate-x-1">→</span>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Leagues Feature */}
+                    <Link
+                        href="/leagues"
+                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-purple-900 dark:to-pink-900"
+                    >
+                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-purple-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-purple-800/50"></div>
+                        <div className="relative">
+                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
+                                <Trophy className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                                Leagues
+                            </h3>
+                            <p className="mb-4 text-gray-700 dark:text-gray-300">
+                                Browse teams from the world's top football leagues
+                            </p>
+                            <div className="flex items-center gap-2 text-sm font-medium text-purple-600 dark:text-purple-400">
+                                View Leagues <span className="transition-transform group-hover:translate-x-1">→</span>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Stadiums Feature */}
+                    <Link
+                        href="/stadiums"
+                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-orange-900 dark:to-amber-900"
+                    >
+                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-orange-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-orange-800/50"></div>
+                        <div className="relative">
+                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
+                                <MapPin className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                                Stadiums
+                            </h3>
+                            <p className="mb-4 text-gray-700 dark:text-gray-300">
+                                Discover iconic stadiums and their home teams
+                            </p>
+                            <div className="flex items-center gap-2 text-sm font-medium text-orange-600 dark:text-orange-400">
+                                Explore Stadiums <span className="transition-transform group-hover:translate-x-1">→</span>
+                            </div>
+                        </div>
+                    </Link>
+
                     {/* Interactive Map Feature */}
                     <Link
-                        href="#"
+                        href="/map"
                         className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-blue-900 dark:to-cyan-900"
                     >
                         <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-blue-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-blue-800/50"></div>
@@ -79,120 +142,10 @@ export default function Dashboard() {
                                 Interactive Map
                             </h3>
                             <p className="mb-4 text-gray-700 dark:text-gray-300">
-                                Explore stadium locations on an interactive world map
+                                Explore teams and stadiums on an interactive map
                             </p>
                             <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
                                 View Map <span className="transition-transform group-hover:translate-x-1">→</span>
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Browse Teams Feature */}
-                    <Link
-                        href="#"
-                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-green-900 dark:to-emerald-900"
-                    >
-                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-green-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-green-800/50"></div>
-                        <div className="relative">
-                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
-                                <Search className="h-8 w-8 text-green-600 dark:text-green-400" />
-                            </div>
-                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                                Browse Teams
-                            </h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-300">
-                                Search and filter football teams by country and league
-                            </p>
-                            <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
-                                Explore Teams <span className="transition-transform group-hover:translate-x-1">→</span>
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Leagues Feature */}
-                    <Link
-                        href="#"
-                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-purple-900 dark:to-pink-900"
-                    >
-                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-purple-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-purple-800/50"></div>
-                        <div className="relative">
-                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
-                                <Trophy className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                                Top Leagues
-                            </h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-300">
-                                Discover teams from the world's most prestigious leagues
-                            </p>
-                            <div className="flex items-center gap-2 text-sm font-medium text-purple-600 dark:text-purple-400">
-                                View Leagues <span className="transition-transform group-hover:translate-x-1">→</span>
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Stadiums Feature */}
-                    <Link
-                        href="#"
-                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-orange-900 dark:to-amber-900"
-                    >
-                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-orange-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-orange-800/50"></div>
-                        <div className="relative">
-                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
-                                <MapPin className="h-8 w-8 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                                Famous Stadiums
-                            </h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-300">
-                                Visit iconic stadiums and learn about their history
-                            </p>
-                            <div className="flex items-center gap-2 text-sm font-medium text-orange-600 dark:text-orange-400">
-                                Explore Stadiums <span className="transition-transform group-hover:translate-x-1">→</span>
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Countries Feature */}
-                    <Link
-                        href="#"
-                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-100 to-rose-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-red-900 dark:to-rose-900"
-                    >
-                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-red-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-red-800/50"></div>
-                        <div className="relative">
-                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
-                                <Globe2 className="h-8 w-8 text-red-600 dark:text-red-400" />
-                            </div>
-                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                                By Country
-                            </h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-300">
-                                Browse teams organized by their home countries
-                            </p>
-                            <div className="flex items-center gap-2 text-sm font-medium text-red-600 dark:text-red-400">
-                                Browse Countries <span className="transition-transform group-hover:translate-x-1">→</span>
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Statistics Feature */}
-                    <Link
-                        href="#"
-                        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 p-8 shadow-lg transition-all hover:shadow-2xl dark:from-indigo-900 dark:to-violet-900"
-                    >
-                        <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-indigo-200/50 blur-3xl transition-transform group-hover:scale-150 dark:bg-indigo-800/50"></div>
-                        <div className="relative">
-                            <div className="mb-4 inline-flex rounded-lg bg-white/80 p-3 dark:bg-gray-800/80">
-                                <Trophy className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-                            </div>
-                            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                                Team Details
-                            </h3>
-                            <p className="mb-4 text-gray-700 dark:text-gray-300">
-                                View detailed information about each team
-                            </p>
-                            <div className="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                                Learn More <span className="transition-transform group-hover:translate-x-1">→</span>
                             </div>
                         </div>
                     </Link>

@@ -27,7 +27,7 @@ class RedirectIfAuthenticated
                     return redirect('/admin/dashboard');
                 }
 
-                // Redirect regular users to dashboard
+                // Redirect regular users to user dashboard
                 return redirect('/dashboard');
             }
         }
