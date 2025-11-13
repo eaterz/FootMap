@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { ChevronLeft, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { ChevronLeft, Upload, X, Image as ImageIcon, Loader2, Globe } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -16,6 +16,7 @@ interface League {
     logo_path: string | null;
     founded_year: string | null;
     description: string | null;
+    resource_url: string | null;
 }
 
 interface Props {
@@ -32,6 +33,7 @@ export default function Edit({ league, countries }: Props) {
         logo: null as File | null,
         founded_year: initialYear,
         description: league.description || '',
+        resource_url: league.resource_url || '',
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -299,6 +301,33 @@ export default function Edit({ league, countries }: Props) {
                                             disabled={isSubmitting}
                                         />
                                         {errors.description && <p className="mt-1.5 text-sm text-red-600">{errors.description}</p>}
+                                    </div>
+
+                                    {/* Resource URL */}
+                                    <div className="md:col-span-2">
+                                        <label htmlFor="resource_url" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Resource URL
+                                        </label>
+                                        <div className="relative">
+                                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                                <Globe className="h-5 w-5 text-gray-400" />
+                                            </div>
+                                            <input
+                                                id="resource_url"
+                                                name="resource_url"
+                                                type="url"
+                                                value={formData.resource_url}
+                                                onChange={handleChange}
+                                                placeholder="https://en.wikipedia.org/wiki/..."
+                                                className="w-full rounded-lg border border-gray-300 bg-white pl-11 pr-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                disabled={isSubmitting}
+                                                maxLength={500}
+                                            />
+                                        </div>
+                                        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                            Optional link to Wikipedia or official website
+                                        </p>
+                                        {errors.resource_url && <p className="mt-1.5 text-sm text-red-600">{errors.resource_url}</p>}
                                     </div>
                                 </div>
                             </div>

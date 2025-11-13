@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Plus, Eye, Edit, Trash2, X, Trophy, Calendar, Globe } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, X, Trophy, Calendar, Globe, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
 import AdminLayout from '@/layouts/AdminLayout';
@@ -10,6 +10,7 @@ interface League {
     logo: string | null;
     founded_year: string | null;
     description: string | null;
+    resource_url: string | null;
     country: string | null;
     created_at: string;
 }
@@ -367,6 +368,36 @@ export default function Index({ leagues }: Props) {
                                     </p>
                                 </div>
                             </div>
+
+                            {/* Resource URL */}
+                            {selectedLeague.resource_url && (
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-3">
+                                        Resource
+                                    </p>
+                                    <a
+                                        href={selectedLeague.resource_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between gap-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 transition-colors hover:bg-green-100 dark:hover:bg-green-900/30"
+                                    >
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/40">
+                                                <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    Visit External Resource
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                    {selectedLeague.resource_url}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                    </a>
+                                </div>
+                            )}
 
                             {/* Created Date */}
                             <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
