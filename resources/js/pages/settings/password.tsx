@@ -1,10 +1,13 @@
-import { Head, Link, Form } from '@inertiajs/react';
+import { Head, Link, usePage, Form } from '@inertiajs/react';
 import { User, Lock, Shield, Palette, Eye, EyeOff } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { type SharedData } from '@/types';
 import Layout from '@/layouts/Layout';
+import AdminLayout from '@/layouts/AdminLayout';
 import PasswordController from '@/actions/App/Http/Controllers/Settings/PasswordController';
 
 export default function Password() {
+    const { auth } = usePage<SharedData>().props;
     const [activePage] = useState('password');
     const [showPasswords, setShowPasswords] = useState({
         current: false,
@@ -15,6 +18,9 @@ export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
+    const isAdmin = auth.user?.role === 'admin';
+    const LayoutComponent = isAdmin ? AdminLayout : Layout;
+
     const navItems = [
         { id: 'profile', label: 'Profile', icon: User, href: '/settings/profile' },
         { id: 'password', label: 'Password', icon: Lock, href: '/settings/password' },
@@ -23,7 +29,7 @@ export default function Password() {
     ];
 
     return (
-        <Layout>
+        <LayoutComponent>
             <Head title="Password Settings" />
 
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950">
@@ -198,6 +204,6 @@ export default function Password() {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </LayoutComponent>
     );
 }

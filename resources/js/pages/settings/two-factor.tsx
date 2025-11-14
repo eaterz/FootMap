@@ -3,9 +3,11 @@ import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
+import { type SharedData } from '@/types';
 import Layout from '@/layouts/Layout';
+import AdminLayout from '@/layouts/AdminLayout';
 import { disable, enable} from '@/routes/two-factor';
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { ShieldBan, ShieldCheck, Shield, User, Lock, Palette } from 'lucide-react';
 import { useState } from 'react';
 
@@ -30,6 +32,10 @@ export default function TwoFactor({
         errors,
     } = useTwoFactorAuth();
 
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = auth.user?.role === 'admin';
+    const LayoutComponent = isAdmin ? AdminLayout : Layout;
+
     const [showSetupModal, setShowSetupModal] = useState<boolean>(false);
 
     const navItems = [
@@ -40,7 +46,7 @@ export default function TwoFactor({
     ];
 
     return (
-        <Layout>
+        <LayoutComponent>
             <Head title="Two-Factor Authentication" />
 
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950">
@@ -154,6 +160,6 @@ export default function TwoFactor({
                     </div>
                 </div>
             </div>
-        </Layout>
+        </LayoutComponent>
     );
 }

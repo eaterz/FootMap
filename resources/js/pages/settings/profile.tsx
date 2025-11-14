@@ -1,8 +1,9 @@
 import { Head, Link, usePage, Form } from '@inertiajs/react';
-import { ChevronLeft, User, Lock, Shield, Palette, Trash2 } from 'lucide-react';
+import { User, Lock, Shield, Palette, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { type SharedData } from '@/types';
 import Layout from '@/layouts/Layout';
+import AdminLayout from '@/layouts/AdminLayout';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { send } from '@/routes/verification';
 
@@ -16,6 +17,10 @@ export default function Profile({ mustVerifyEmail, status }: ProfileProps) {
     const [activePage, setActivePage] = useState('profile');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    // Check if user is admin based on role
+    const isAdmin = auth.user?.role === 'admin';
+    const LayoutComponent = isAdmin ? AdminLayout : Layout;
+
     const navItems = [
         { id: 'profile', label: 'Profile', icon: User, href: '/settings/profile' },
         { id: 'password', label: 'Password', icon: Lock, href: '/settings/password' },
@@ -24,7 +29,7 @@ export default function Profile({ mustVerifyEmail, status }: ProfileProps) {
     ];
 
     return (
-        <Layout>
+        <LayoutComponent>
             <Head title="Profile Settings" />
 
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950">
@@ -215,6 +220,6 @@ export default function Profile({ mustVerifyEmail, status }: ProfileProps) {
                     </div>
                 </div>
             )}
-        </Layout>
+        </LayoutComponent>
     );
 }

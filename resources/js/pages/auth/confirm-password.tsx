@@ -3,14 +3,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { store } from '@/routes/password/confirm';
+import { type SharedData } from '@/types';
 import Layout from '@/layouts/Layout';
-import { ChevronLeft } from 'lucide-react';
+import AdminLayout from '@/layouts/AdminLayout';
 
 export default function ConfirmPassword() {
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = auth.user?.role === 'admin';
+    const LayoutComponent = isAdmin ? AdminLayout : Layout;
     return (
-        <Layout>
+        <LayoutComponent>
             <Head title="Confirm password" />
 
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950">
@@ -58,6 +62,6 @@ export default function ConfirmPassword() {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </LayoutComponent>
     );
 }

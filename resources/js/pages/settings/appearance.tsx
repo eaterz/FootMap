@@ -1,9 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
-import { ChevronLeft, User, Lock, Shield, Palette } from 'lucide-react';
+import {User, Lock, Shield, Palette } from 'lucide-react';
 import { type SharedData } from '@/types';
 import Layout from '@/layouts/Layout';
-import { edit as editAppearance } from '@/routes/appearance';
+import AdminLayout from '@/layouts/AdminLayout';
 import { usePage } from '@inertiajs/react';
 
 const navItems = [
@@ -15,9 +15,11 @@ const navItems = [
 
 export default function Appearance() {
     const { auth } = usePage<SharedData>().props;
+    const isAdmin = auth.user?.role === 'admin';
+    const LayoutComponent = isAdmin ? AdminLayout : Layout;
 
     return (
-        <Layout>
+        <LayoutComponent>
             <Head title="Appearance Settings" />
 
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-950">
@@ -71,6 +73,6 @@ export default function Appearance() {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </LayoutComponent>
     );
 }
