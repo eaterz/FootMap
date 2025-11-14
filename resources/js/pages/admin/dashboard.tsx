@@ -41,6 +41,8 @@ interface Props {
 }
 
 export default function AdminDashboard({ stats, recent_teams, teams_by_country, teams_by_league }: Props) {
+
+
     return (
         <AdminLayout>
             <Head title="Admin Dashboard" />

@@ -67,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                 Teams
                             </Link>
                             <Link
-                                href="#"
+                                href="/stadiums"
                                 className="text-sm font-medium text-gray-700 transition-colors hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
                             >
                                 Stadiums
