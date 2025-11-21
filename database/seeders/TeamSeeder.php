@@ -64,7 +64,7 @@ class TeamSeeder extends Seeder
                 'league_id' => 3,
                 'stadium_id' => 6,
                 'name' => 'Bayern Munich',
-                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg',
+                'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/240px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png',
                 'founded_year' => '1900-01-01',
                 'description' => 'FC Bayern München is Germany\'s most successful football club, dominating the Bundesliga with numerous championships. Known for their efficient and powerful style of play, Bayern has also achieved significant success in European competitions. Based at the modern Allianz Arena in Munich, the club is renowned for its strong organization, youth development, and consistent excellence.',
                 'website' => 'https://fcbayern.com',

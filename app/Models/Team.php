@@ -16,6 +16,7 @@ class Team extends Model
         'logo',
         'founded_year',
         'website',
+        'description',
     ];
 
     protected $casts = [
