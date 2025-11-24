@@ -7,6 +7,7 @@ use App\Models\League;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -71,8 +72,13 @@ class TeamController extends Controller
     {
         $team->load(['league.country', 'stadium']);
 
-        // Fetch upcoming matches from API
-        $upcomingMatches = $this->fetchUpcomingMatches($team);
+        $upcomingMatches = Cache::remember(
+            "team_{$team->id}_upcoming_matches",
+            now()->addMinutes(30),
+            function () use ($team) {
+                return $this->fetchUpcomingMatches($team);
+            }
+        );
 
         return Inertia::render('teams/show', [
             'team' => [
@@ -100,11 +106,6 @@ class TeamController extends Controller
 
     /**
      * Fetch upcoming matches for a team from external API
-     *
-     * You'll need to:
-     * 1. Sign up at https://www.api-football.com/ for a free API key
-     * 2. Add FOOTBALL_API_KEY to your .env file
-     * 3. You may need to map your team names to API team IDs
      */
     private function fetchUpcomingMatches(Team $team): array
     {
@@ -116,91 +117,75 @@ class TeamController extends Controller
                 return [];
             }
 
-            // Note: You'll need to map your team names to API team IDs
-            // For demo purposes, this returns empty array
-            // In production, you should:
-            // 1. Store API team IDs in your teams table
-            // 2. Or create a mapping service
-            // 3. Or search for the team first using the API
+            // Get the API team ID
+            $teamApiId = $team->api_team_id;
 
-            $teamApiId = $this->getTeamApiId($team);
-
+            // If no API team ID is set, try to find it
             if (!$teamApiId) {
-                return [];
-            }
+                Log::info("No API team ID for team: {$team->name}, attempting to find it");
+                $teamApiId = $this->findAndUpdateTeamApiId($team);
 
-            $response = Http::withHeaders([
-                'x-rapidapi-key' => $apiKey,
-                'x-rapidapi-host' => 'api-football-v1.p.rapidapi.com'
-            ])->get('https://api-football-v1.p.rapidapi.com/v3/fixtures', [
-                'team' => $teamApiId,
-                'next' => 5, // Get next 5 matches
-                'timezone' => 'UTC'
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (isset($data['response']) && is_array($data['response'])) {
-                    return array_map(function ($fixture) {
-                        return [
-                            'id' => $fixture['fixture']['id'],
-                            'date' => $fixture['fixture']['date'],
-                            'timestamp' => $fixture['fixture']['timestamp'],
-                            'venue' => $fixture['fixture']['venue']['name'] ?? 'TBD',
-                            'status' => $fixture['fixture']['status']['long'] ?? 'Scheduled',
-                            'competition' => $fixture['league']['name'] ?? '',
-                            'competition_logo' => $fixture['league']['logo'] ?? null,
-                            'home_team' => [
-                                'name' => $fixture['teams']['home']['name'],
-                                'logo' => $fixture['teams']['home']['logo'],
-                            ],
-                            'away_team' => [
-                                'name' => $fixture['teams']['away']['name'],
-                                'logo' => $fixture['teams']['away']['logo'],
-                            ],
-                        ];
-                    }, $data['response']);
+                if (!$teamApiId) {
+                    Log::warning("Could not find API ID for team: {$team->name}");
+                    return [];
                 }
             }
 
-            return [];
+            // Fetch upcoming fixtures
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'x-rapidapi-key' => $apiKey,
+                    'x-rapidapi-host' => 'api-football-v1.p.rapidapi.com'
+                ])
+                ->get('https://api-football-v1.p.rapidapi.com/v3/fixtures', [
+                    'team' => $teamApiId,
+                    'next' => 5, // Get next 5 matches
+                    'timezone' => 'UTC'
+                ]);
+
+            if (!$response->successful()) {
+                Log::error("API request failed for team {$team->name}: " . $response->status());
+                return [];
+            }
+
+            $data = $response->json();
+
+            if (!isset($data['response']) || !is_array($data['response'])) {
+                Log::warning("Invalid API response format for team: {$team->name}");
+                return [];
+            }
+
+            // Transform the API response
+            return array_map(function ($fixture) {
+                return [
+                    'id' => $fixture['fixture']['id'] ?? null,
+                    'date' => $fixture['fixture']['date'] ?? null,
+                    'timestamp' => $fixture['fixture']['timestamp'] ?? null,
+                    'venue' => $fixture['fixture']['venue']['name'] ?? 'TBD',
+                    'status' => $fixture['fixture']['status']['long'] ?? 'Scheduled',
+                    'competition' => $fixture['league']['name'] ?? 'Unknown',
+                    'competition_logo' => $fixture['league']['logo'] ?? null,
+                    'home_team' => [
+                        'name' => $fixture['teams']['home']['name'] ?? 'Unknown',
+                        'logo' => $fixture['teams']['home']['logo'] ?? null,
+                    ],
+                    'away_team' => [
+                        'name' => $fixture['teams']['away']['name'] ?? 'Unknown',
+                        'logo' => $fixture['teams']['away']['logo'] ?? null,
+                    ],
+                ];
+            }, $data['response']);
+
         } catch (\Exception $e) {
-            Log::error('Error fetching upcoming matches: ' . $e->getMessage());
+            Log::error("Error fetching upcoming matches for team {$team->name}: " . $e->getMessage());
             return [];
         }
     }
 
     /**
-     * Get the API team ID for a team
-     * This method checks if the team has an api_team_id stored,
-     * otherwise falls back to a predefined mapping
+     * Find and update the API team ID for a team
      */
-    private function getTeamApiId(Team $team): ?int
-    {
-        // If api_team_id column exists and has a value, use it
-        if (isset($team->api_team_id) && $team->api_team_id) {
-            return $team->api_team_id;
-        }
-
-        // Fallback mapping for demo purposes
-        // You should populate api_team_id in your database instead
-        $mapping = [
-            'Manchester United' => 33,
-            'Liverpool FC' => 40,
-            'Real Madrid' => 541,
-            'FC Barcelona' => 529,
-            'Bayern Munich' => 157,
-        ];
-
-        return $mapping[$team->name] ?? null;
-    }
-
-    /**
-     * Search for a team in the API by name (helper method)
-     * You can use this to find team IDs and update your database
-     */
-    private function searchTeamInApi(string $teamName): ?array
+    private function findAndUpdateTeamApiId(Team $team): ?int
     {
         try {
             $apiKey = config('services.football_api.key');
@@ -209,24 +194,33 @@ class TeamController extends Controller
                 return null;
             }
 
-            $response = Http::withHeaders([
-                'x-rapidapi-key' => $apiKey,
-                'x-rapidapi-host' => 'api-football-v1.p.rapidapi.com'
-            ])->get('https://api-football-v1.p.rapidapi.com/v3/teams', [
-                'search' => $teamName
-            ]);
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'x-rapidapi-key' => $apiKey,
+                    'x-rapidapi-host' => 'api-football-v1.p.rapidapi.com'
+                ])
+                ->get('https://api-football-v1.p.rapidapi.com/v3/teams', [
+                    'search' => $team->name
+                ]);
 
             if ($response->successful()) {
                 $data = $response->json();
 
                 if (isset($data['response']) && count($data['response']) > 0) {
-                    return $data['response'][0]['team'];
+                    $apiTeamId = $data['response'][0]['team']['id'];
+
+                    // Update the team with the API ID
+                    $team->update(['api_team_id' => $apiTeamId]);
+
+                    Log::info("Updated team {$team->name} with API ID: {$apiTeamId}");
+
+                    return $apiTeamId;
                 }
             }
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Error searching team in API: ' . $e->getMessage());
+            Log::error("Error finding API ID for team {$team->name}: " . $e->getMessage());
             return null;
         }
     }

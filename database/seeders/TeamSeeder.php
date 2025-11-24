@@ -14,9 +14,10 @@ class TeamSeeder extends Seeder
     public function run(): void
     {
         // Assuming league IDs: 1=Premier League, 2=La Liga, etc.
-        // Stadium IDs: 1=Wembley, 2=Old Trafford, 3=Anfield, 4=Santiago Bernabéu, 5=Camp Nou, 6=Allianz Arena
+        // Stadium IDs: 1=Wembley, 2=Old Trafford, 3=Anfield, 4=Emirates, 5=Stamford Bridge, 6=Etihad, 7=Santiago Bernabéu, 8=Camp Nou, 9=Wanda Metropolitano, 10=Allianz Arena
         DB::table('teams')->insert([
             [
+                'api_team_id' => 33, // API ID for Manchester United
                 'league_id' => 1,
                 'stadium_id' => 2,
                 'name' => 'Manchester United',
@@ -28,6 +29,7 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'api_team_id' => 40, // API ID for Liverpool
                 'league_id' => 1,
                 'stadium_id' => 3,
                 'name' => 'Liverpool FC',
@@ -39,8 +41,9 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'api_team_id' => 541, // API ID for Real Madrid
                 'league_id' => 2,
-                'stadium_id' => 4,
+                'stadium_id' => 7,
                 'name' => 'Real Madrid',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg',
                 'founded_year' => '1902-01-01',
@@ -50,8 +53,9 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'api_team_id' => 529, // API ID for Barcelona
                 'league_id' => 2,
-                'stadium_id' => 5,
+                'stadium_id' => 8,
                 'name' => 'FC Barcelona',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg',
                 'founded_year' => '1899-01-01',
@@ -61,8 +65,9 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'api_team_id' => 157, // API ID for Bayern Munich
                 'league_id' => 3,
-                'stadium_id' => 6,
+                'stadium_id' => 10,
                 'name' => 'Bayern Munich',
                 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/240px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png',
                 'founded_year' => '1900-01-01',
@@ -71,7 +76,6 @@ class TeamSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Add more as needed
         ]);
     }
 }
