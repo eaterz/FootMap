@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Search, Shield, Calendar, MapPin, Users, ExternalLink, X, Filter, Trophy, FileText } from 'lucide-react';
+import { Search, Shield, Calendar, MapPin, Users, ExternalLink, X, Filter, Trophy, FileText, Eye } from 'lucide-react';
 import { useState, FormEvent } from 'react';
 import Layout from '@/layouts/Layout';
 import FlagIcon from '@/components/FlagIcon';
@@ -345,19 +345,28 @@ export default function TeamsIndex({ teams, leagues, filters }: TeamsIndexProps)
                                 </div>
                             </div>
 
-                            {selectedTeam.website && (
-                                <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                            {/* Action Buttons */}
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <Link
+                                    href={`/teams/${selectedTeam.id}`}
+                                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-green-700 px-6 py-3 font-semibold text-white transition-all hover:from-green-700 hover:to-green-800 hover:shadow-lg"
+                                >
+                                    <Eye className="h-5 w-5" />
+                                    <span>View Details & Matches</span>
+                                </Link>
+
+                                {selectedTeam.website && (
                                     <a
                                         href={selectedTeam.website}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center justify-between font-medium text-green-600 transition-colors hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                                        className="flex items-center justify-center gap-2 rounded-xl border-2 border-green-600 bg-white px-6 py-3 font-semibold text-green-600 transition-all hover:bg-green-50 dark:bg-gray-800 dark:hover:bg-gray-700"
                                     >
-                                        <span>Visit Official Website</span>
                                         <ExternalLink className="h-5 w-5" />
+                                        <span>Website</span>
                                     </a>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

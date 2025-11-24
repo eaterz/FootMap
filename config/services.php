@@ -22,6 +22,7 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -33,6 +34,11 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+    ],
+
+    'football_api' => [
+        'key' => env('FOOTBALL_API_KEY'),
+        'base_url' => 'https://api-football-v1.p.rapidapi.com/v3',
     ],
 
 ];

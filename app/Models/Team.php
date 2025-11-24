@@ -17,6 +17,7 @@ class Team extends Model
         'founded_year',
         'website',
         'description',
+        'api_team_id',
     ];
 
     protected $casts = [
