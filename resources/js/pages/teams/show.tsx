@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Shield, Calendar, MapPin, ExternalLink, ArrowLeft, Users, Trophy, FileText, Clock, Info, Eye } from 'lucide-react';
+import { Shield, Calendar, MapPin, ExternalLink, ArrowLeft, Users, Trophy, FileText, Clock, Info } from 'lucide-react';
 import Layout from '@/layouts/Layout';
 import FlagIcon from '@/components/FlagIcon';
 
@@ -28,6 +28,7 @@ interface Team {
 interface Match {
     id: number;
     date: string;
+    time: string;
     timestamp: number;
     venue: string;
     status: string;
@@ -41,6 +42,8 @@ interface Match {
         name: string;
         logo: string;
     };
+    round: number | null;
+    season: string | null;
 }
 
 interface TeamShowProps {
@@ -57,7 +60,9 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
         return `/storage/${logoPath}`;
     };
 
-    const formatMatchDate = (dateString: string) => {
+    const formatMatchDate = (dateString: string, timeString: string) => {
+        if (!dateString) return 'TBA';
+
         const date = new Date(dateString);
         const today = new Date();
         const tomorrow = new Date(today);
@@ -66,25 +71,18 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
         const isToday = date.toDateString() === today.toDateString();
         const isTomorrow = date.toDateString() === tomorrow.toDateString();
 
-        const timeString = date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
+        const formattedTime = timeString || 'TBA';
 
         if (isToday) {
-            return `Today at ${timeString}`;
+            return `Today at ${formattedTime}`;
         } else if (isTomorrow) {
-            return `Tomorrow at ${timeString}`;
+            return `Tomorrow at ${formattedTime}`;
         } else {
             return date.toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            });
+                year: 'numeric'
+            }) + (timeString ? ` at ${timeString}` : '');
         }
     };
 
@@ -215,9 +213,10 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                                                                 )}
                                                                 <span className="font-medium text-gray-700 dark:text-gray-300">
                                                                     {match.competition}
+                                                                    {match.round && ` - Round ${match.round}`}
                                                                 </span>
                                                             </div>
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                                                                 {match.status}
                                                             </span>
                                                         </div>
@@ -228,11 +227,17 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                                                         <div className="mb-4 flex items-center justify-between">
                                                             {/* Home Team */}
                                                             <div className={`flex flex-1 items-center gap-3 ${isHome ? 'font-bold' : ''}`}>
-                                                                <img
-                                                                    src={match.home_team.logo}
-                                                                    alt={match.home_team.name}
-                                                                    className="h-10 w-10 object-contain"
-                                                                />
+                                                                {match.home_team.logo ? (
+                                                                    <img
+                                                                        src={match.home_team.logo}
+                                                                        alt={match.home_team.name}
+                                                                        className="h-10 w-10 object-contain"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                                                        <Shield className="h-6 w-6 text-gray-400" />
+                                                                    </div>
+                                                                )}
                                                                 <span className="text-gray-900 dark:text-white">
                                                                     {match.home_team.name}
                                                                 </span>
@@ -243,11 +248,17 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
 
                                                             {/* Away Team */}
                                                             <div className={`flex flex-1 flex-row-reverse items-center gap-3 ${!isHome ? 'font-bold' : ''}`}>
-                                                                <img
-                                                                    src={match.away_team.logo}
-                                                                    alt={match.away_team.name}
-                                                                    className="h-10 w-10 object-contain"
-                                                                />
+                                                                {match.away_team.logo ? (
+                                                                    <img
+                                                                        src={match.away_team.logo}
+                                                                        alt={match.away_team.name}
+                                                                        className="h-10 w-10 object-contain"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                                                        <Shield className="h-6 w-6 text-gray-400" />
+                                                                    </div>
+                                                                )}
                                                                 <span className="text-right text-gray-900 dark:text-white">
                                                                     {match.away_team.name}
                                                                 </span>
@@ -258,7 +269,7 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                                                         <div className="space-y-2 border-t border-gray-200 pt-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
                                                             <div className="flex items-center gap-2">
                                                                 <Calendar className="h-4 w-4 text-purple-500" />
-                                                                <span>{formatMatchDate(match.date)}</span>
+                                                                <span>{formatMatchDate(match.date, match.time)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2">
                                                                 <MapPin className="h-4 w-4 text-green-500" />
@@ -279,7 +290,7 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                                             No Upcoming Matches
                                         </h3>
                                         <p className="text-center text-gray-600 dark:text-gray-400">
-                                            There are no future matches available for this team at the moment.
+                                            There are no scheduled matches available for this team at the moment.
                                         </p>
                                     </div>
                                 )}
@@ -318,12 +329,6 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                                             </div>
                                         </div>
                                     )}
-                                    <Link
-                                        href={`/stadiums/${team.stadium.id}`}
-                                        className="mt-4 block rounded-lg bg-green-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-green-700"
-                                    >
-                                        View Stadium Details
-                                    </Link>
                                 </div>
                             </div>
 

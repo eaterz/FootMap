@@ -36,9 +36,9 @@ return [
         ],
     ],
 
-    'football_api' => [
-        'key' => env('FOOTBALL_API_KEY'),
-        'base_url' => 'https://api-football-v1.p.rapidapi.com/v3',
+    'thesportsdb_api' => [
+        'key' => env('THESPORTSDB_API_KEY', '3'), // '3' is the free tier key
     ],
+
 
 ];
