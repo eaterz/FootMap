@@ -104,19 +104,14 @@ class TeamController extends Controller
         ]);
     }
 
-    /**
-     * Fetch upcoming matches for a team from TheSportsDB API
-     */
+
     private function fetchUpcomingMatches(Team $team): array
     {
         try {
-            // TheSportsDB uses '3' for free tier (patreon tier uses actual API key)
             $apiKey = config('services.thesportsdb_api.key', '3');
-
-            // Get the API team ID
             $teamApiId = $team->api_team_id;
 
-            // If no API team ID is set, try to find it
+
             if (!$teamApiId) {
                 Log::info("No API team ID for team: {$team->name}, attempting to find it");
                 $teamApiId = $this->findAndUpdateTeamApiId($team, $apiKey);
@@ -127,7 +122,12 @@ class TeamController extends Controller
                 }
             }
 
-            // Fetch next 5 events for the team
+
+            $teamApiIdStr = (string) $teamApiId;
+
+            Log::info("Fetching matches for team: {$team->name} with API ID: {$teamApiIdStr}");
+
+
             $response = Http::timeout(10)
                 ->get("https://www.thesportsdb.com/api/v1/json/{$apiKey}/eventsnext.php", [
                     'id' => $teamApiId
@@ -145,8 +145,31 @@ class TeamController extends Controller
                 return [];
             }
 
-            // Transform the API response
-            return array_map(function ($event) {
+
+            $filteredEvents = array_filter($data['events'], function ($event) use ($teamApiIdStr, $team) {
+                $homeTeamId = isset($event['idHomeTeam']) ? (string) $event['idHomeTeam'] : null;
+                $awayTeamId = isset($event['idAwayTeam']) ? (string) $event['idAwayTeam'] : null;
+
+                $isOurTeam = ($homeTeamId === $teamApiIdStr) || ($awayTeamId === $teamApiIdStr);
+
+                if (!$isOurTeam) {
+                    Log::debug("Filtering out match: {$event['strHomeTeam']} vs {$event['strAwayTeam']} - not our team");
+                }
+
+                return $isOurTeam;
+            });
+
+            Log::info("Filtered events for team {$team->name}", [
+                'total_events' => count($data['events']),
+                'filtered_events' => count($filteredEvents),
+                'team_api_id' => $teamApiIdStr,
+            ]);
+
+
+            $matches = array_map(function ($event) use ($team, $teamApiIdStr) {
+
+                $isHomeTeam = isset($event['idHomeTeam']) && (string) $event['idHomeTeam'] === $teamApiIdStr;
+
                 return [
                     'id' => $event['idEvent'] ?? null,
                     'date' => $event['dateEvent'] ?? null,
@@ -159,17 +182,23 @@ class TeamController extends Controller
                     'competition' => $event['strLeague'] ?? 'Unknown',
                     'competition_logo' => $event['strLeagueBadge'] ?? null,
                     'home_team' => [
+                        'id' => $event['idHomeTeam'] ?? null,
                         'name' => $event['strHomeTeam'] ?? 'Unknown',
                         'logo' => $event['strHomeTeamBadge'] ?? null,
                     ],
                     'away_team' => [
+                        'id' => $event['idAwayTeam'] ?? null,
                         'name' => $event['strAwayTeam'] ?? 'Unknown',
                         'logo' => $event['strAwayTeamBadge'] ?? null,
                     ],
                     'round' => $event['intRound'] ?? null,
                     'season' => $event['strSeason'] ?? null,
+                    'is_home_team' => $isHomeTeam,
+                    'current_team_name' => $team->name,
                 ];
-            }, array_slice($data['events'], 0, 5)); // Limit to 5 matches
+            }, array_slice(array_values($filteredEvents), 0, 5));
+
+            return $matches;
 
         } catch (\Exception $e) {
             Log::error("Error fetching upcoming matches for team {$team->name}: " . $e->getMessage());
@@ -182,12 +211,11 @@ class TeamController extends Controller
      */
     private function formatStatus(array $event): string
     {
-        // Check if the event has a status field
+
         if (isset($event['strStatus']) && !empty($event['strStatus'])) {
             return $event['strStatus'];
         }
 
-        // If event is in the future
         if (isset($event['dateEvent'])) {
             $eventDate = strtotime($event['dateEvent']);
             $now = time();
@@ -200,13 +228,11 @@ class TeamController extends Controller
         return 'Upcoming';
     }
 
-    /**
-     * Find and update the API team ID for a team using TheSportsDB
-     */
+
     private function findAndUpdateTeamApiId(Team $team, string $apiKey): ?int
     {
         try {
-            // Search for the team by name
+
             $response = Http::timeout(10)
                 ->get("https://www.thesportsdb.com/api/v1/json/{$apiKey}/searchteams.php", [
                     't' => $team->name
@@ -216,7 +242,7 @@ class TeamController extends Controller
                 $data = $response->json();
 
                 if (isset($data['teams']) && is_array($data['teams']) && count($data['teams']) > 0) {
-                    // Find the best match (prefer exact matches and soccer teams)
+
                     $bestMatch = null;
 
                     foreach ($data['teams'] as $apiTeam) {
@@ -224,13 +250,13 @@ class TeamController extends Controller
                         if (isset($apiTeam['strSport']) &&
                             in_array(strtolower($apiTeam['strSport']), ['soccer', 'football'])) {
 
-                            // Check for exact name match
+
                             if (strtolower($apiTeam['strTeam']) === strtolower($team->name)) {
                                 $bestMatch = $apiTeam;
                                 break;
                             }
 
-                            // Keep first soccer team as fallback
+
                             if (!$bestMatch) {
                                 $bestMatch = $apiTeam;
                             }
@@ -240,7 +266,6 @@ class TeamController extends Controller
                     if ($bestMatch) {
                         $apiTeamId = (int) $bestMatch['idTeam'];
 
-                        // Update the team with the API ID
                         $team->update(['api_team_id' => $apiTeamId]);
 
                         Log::info("Updated team {$team->name} with TheSportsDB ID: {$apiTeamId}");

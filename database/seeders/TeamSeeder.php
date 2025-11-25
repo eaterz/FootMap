@@ -17,7 +17,7 @@ class TeamSeeder extends Seeder
         // Stadium IDs: 1=Wembley, 2=Old Trafford, 3=Anfield, 4=Emirates, 5=Stamford Bridge, 6=Etihad, 7=Santiago Bernabéu, 8=Camp Nou, 9=Wanda Metropolitano, 10=Allianz Arena
         DB::table('teams')->insert([
             [
-                'api_team_id' => 33, // API ID for Manchester United
+                'api_team_id' => 133612,
                 'league_id' => 1,
                 'stadium_id' => 2,
                 'name' => 'Manchester United',
@@ -29,7 +29,7 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'api_team_id' => 40, // API ID for Liverpool
+                'api_team_id' => 133602,
                 'league_id' => 1,
                 'stadium_id' => 3,
                 'name' => 'Liverpool FC',
@@ -41,7 +41,7 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'api_team_id' => 541, // API ID for Real Madrid
+                'api_team_id' => 133738,
                 'league_id' => 2,
                 'stadium_id' => 7,
                 'name' => 'Real Madrid',
@@ -53,7 +53,7 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'api_team_id' => 529, // API ID for Barcelona
+                'api_team_id' => 133739,
                 'league_id' => 2,
                 'stadium_id' => 8,
                 'name' => 'FC Barcelona',
@@ -65,7 +65,7 @@ class TeamSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'api_team_id' => 157, // API ID for Bayern Munich
+                'api_team_id' => 133664,
                 'league_id' => 3,
                 'stadium_id' => 10,
                 'name' => 'Bayern Munich',

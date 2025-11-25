@@ -35,15 +35,19 @@ interface Match {
     competition: string;
     competition_logo: string | null;
     home_team: {
+        id: number | null;
         name: string;
         logo: string;
     };
     away_team: {
+        id: number | null;
         name: string;
         logo: string;
     };
     round: number | null;
     season: string | null;
+    is_home_team: boolean; // Added this flag
+    current_team_name: string; // Added for reference
 }
 
 interface TeamShowProps {
@@ -84,11 +88,6 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                 year: 'numeric'
             }) + (timeString ? ` at ${timeString}` : '');
         }
-    };
-
-    const isHomeTeam = (match: Match) => {
-        return match.home_team.name.toLowerCase().includes(team.name.toLowerCase()) ||
-            team.name.toLowerCase().includes(match.home_team.name.toLowerCase());
     };
 
     return (
@@ -194,7 +193,9 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
                                 {upcomingMatches.length > 0 ? (
                                     <div className="space-y-4">
                                         {upcomingMatches.map((match) => {
-                                            const isHome = isHomeTeam(match);
+                                            // Use the is_home_team flag from the backend
+                                            const isHome = match.is_home_team;
+
                                             return (
                                                 <div
                                                     key={match.id}

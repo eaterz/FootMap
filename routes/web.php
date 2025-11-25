@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LeagueController;
+use App\Http\Controllers\MapController;
 use App\Http\Controllers\StadiumController;
 use App\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,9 @@ Route::middleware(['auth', 'verified', 'regular'])->group(function () {
     // Teams routes
     Route::get('teams', [TeamController::class, 'index'])->name('teams.index');
     Route::get('teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+
+    // Map routes
+    Route::get('map', [MapController::class, 'index'])->name('map.index');
 });
 
 require __DIR__.'/settings.php';
