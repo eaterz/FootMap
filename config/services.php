@@ -36,8 +36,9 @@ return [
         ],
     ],
 
-    'thesportsdb_api' => [
-        'key' => env('THESPORTSDB_API_KEY', '3'), // '3' is the free tier key
+    'api_football' => [
+        'key' => env('API_FOOTBALL_KEY'),
+        'base_url' => 'https://v3.football.api-sports.io',
     ],
 
 

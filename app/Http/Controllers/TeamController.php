@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\League;
+use App\Services\ApiFootballService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TeamController extends Controller
 {
+    private ApiFootballService $apiFootballService;
+
+    public function __construct(ApiFootballService $apiFootballService)
+    {
+        $this->apiFootballService = $apiFootballService;
+    }
+
     public function index(Request $request): Response
     {
         $query = Team::with(['league.country', 'stadium']);
@@ -72,13 +78,17 @@ class TeamController extends Controller
     {
         $team->load(['league.country', 'stadium']);
 
-        $upcomingMatches = Cache::remember(
-            "team_{$team->id}_upcoming_matches",
-            now()->addMinutes(30),
-            function () use ($team) {
-                return $this->fetchUpcomingMatches($team);
-            }
-        );
+        // Get or find API Football ID
+        if (!$team->api_football_id) {
+            $this->findAndUpdateApiFootballId($team);
+        }
+
+        // Fetch upcoming matches
+        $upcomingMatches = [];
+        if ($team->api_football_id) {
+            $fixtures = $this->apiFootballService->getUpcomingFixtures($team->api_football_id, 5);
+            $upcomingMatches = $this->formatFixtures($fixtures, $team);
+        }
 
         return Inertia::render('teams/show', [
             'team' => [
@@ -104,181 +114,77 @@ class TeamController extends Controller
         ]);
     }
 
-
-    private function fetchUpcomingMatches(Team $team): array
+    /**
+     * Find and update API Football ID for a team
+     */
+    private function findAndUpdateApiFootballId(Team $team): void
     {
         try {
-            $apiKey = config('services.thesportsdb_api.key', '3');
-            $teamApiId = $team->api_team_id;
+            $apiTeam = $this->apiFootballService->searchTeam($team->name);
 
-
-            if (!$teamApiId) {
-                Log::info("No API team ID for team: {$team->name}, attempting to find it");
-                $teamApiId = $this->findAndUpdateTeamApiId($team, $apiKey);
-
-                if (!$teamApiId) {
-                    Log::warning("Could not find API ID for team: {$team->name}");
-                    return [];
-                }
-            }
-
-
-            $teamApiIdStr = (string) $teamApiId;
-
-            Log::info("Fetching matches for team: {$team->name} with API ID: {$teamApiIdStr}");
-
-
-            $response = Http::timeout(10)
-                ->get("https://www.thesportsdb.com/api/v1/json/{$apiKey}/eventsnext.php", [
-                    'id' => $teamApiId
+            if ($apiTeam && isset($apiTeam['team']['id'])) {
+                $team->update([
+                    'api_football_id' => $apiTeam['team']['id']
                 ]);
 
-            if (!$response->successful()) {
-                Log::error("API request failed for team {$team->name}: " . $response->status());
-                return [];
+                Log::info("Updated API Football ID for team: {$team->name} -> {$apiTeam['team']['id']}");
+            } else {
+                Log::warning("Could not find API Football ID for team: {$team->name}");
             }
-
-            $data = $response->json();
-
-            if (!isset($data['events']) || !is_array($data['events'])) {
-                Log::warning("No upcoming events found for team: {$team->name}");
-                return [];
-            }
-
-
-            $filteredEvents = array_filter($data['events'], function ($event) use ($teamApiIdStr, $team) {
-                $homeTeamId = isset($event['idHomeTeam']) ? (string) $event['idHomeTeam'] : null;
-                $awayTeamId = isset($event['idAwayTeam']) ? (string) $event['idAwayTeam'] : null;
-
-                $isOurTeam = ($homeTeamId === $teamApiIdStr) || ($awayTeamId === $teamApiIdStr);
-
-                if (!$isOurTeam) {
-                    Log::debug("Filtering out match: {$event['strHomeTeam']} vs {$event['strAwayTeam']} - not our team");
-                }
-
-                return $isOurTeam;
-            });
-
-            Log::info("Filtered events for team {$team->name}", [
-                'total_events' => count($data['events']),
-                'filtered_events' => count($filteredEvents),
-                'team_api_id' => $teamApiIdStr,
-            ]);
-
-
-            $matches = array_map(function ($event) use ($team, $teamApiIdStr) {
-
-                $isHomeTeam = isset($event['idHomeTeam']) && (string) $event['idHomeTeam'] === $teamApiIdStr;
-
-                return [
-                    'id' => $event['idEvent'] ?? null,
-                    'date' => $event['dateEvent'] ?? null,
-                    'time' => $event['strTime'] ?? null,
-                    'timestamp' => isset($event['dateEvent'], $event['strTime'])
-                        ? strtotime($event['dateEvent'] . ' ' . $event['strTime'])
-                        : null,
-                    'venue' => $event['strVenue'] ?? 'TBD',
-                    'status' => $this->formatStatus($event),
-                    'competition' => $event['strLeague'] ?? 'Unknown',
-                    'competition_logo' => $event['strLeagueBadge'] ?? null,
-                    'home_team' => [
-                        'id' => $event['idHomeTeam'] ?? null,
-                        'name' => $event['strHomeTeam'] ?? 'Unknown',
-                        'logo' => $event['strHomeTeamBadge'] ?? null,
-                    ],
-                    'away_team' => [
-                        'id' => $event['idAwayTeam'] ?? null,
-                        'name' => $event['strAwayTeam'] ?? 'Unknown',
-                        'logo' => $event['strAwayTeamBadge'] ?? null,
-                    ],
-                    'round' => $event['intRound'] ?? null,
-                    'season' => $event['strSeason'] ?? null,
-                    'is_home_team' => $isHomeTeam,
-                    'current_team_name' => $team->name,
-                ];
-            }, array_slice(array_values($filteredEvents), 0, 5));
-
-            return $matches;
-
         } catch (\Exception $e) {
-            Log::error("Error fetching upcoming matches for team {$team->name}: " . $e->getMessage());
-            return [];
+            Log::error("Error finding API Football ID for team {$team->name}: {$e->getMessage()}");
         }
     }
 
     /**
-     * Format event status
+     * Format fixtures data for frontend
      */
-    private function formatStatus(array $event): string
+    private function formatFixtures(array $fixtures, Team $team): array
     {
+        return array_map(function ($fixture) use ($team) {
+            $isHomeTeam = $fixture['teams']['home']['id'] == $team->api_football_id;
 
-        if (isset($event['strStatus']) && !empty($event['strStatus'])) {
-            return $event['strStatus'];
-        }
-
-        if (isset($event['dateEvent'])) {
-            $eventDate = strtotime($event['dateEvent']);
-            $now = time();
-
-            if ($eventDate > $now) {
-                return 'Scheduled';
-            }
-        }
-
-        return 'Upcoming';
+            return [
+                'id' => $fixture['fixture']['id'],
+                'date' => $fixture['fixture']['date'],
+                'timestamp' => $fixture['fixture']['timestamp'],
+                'venue' => $fixture['fixture']['venue']['name'] ?? 'TBD',
+                'status' => $this->formatStatus($fixture['fixture']['status']),
+                'competition' => $fixture['league']['name'] ?? 'Unknown',
+                'competition_logo' => $fixture['league']['logo'] ?? null,
+                'home_team' => [
+                    'id' => $fixture['teams']['home']['id'],
+                    'name' => $fixture['teams']['home']['name'],
+                    'logo' => $fixture['teams']['home']['logo'],
+                ],
+                'away_team' => [
+                    'id' => $fixture['teams']['away']['id'],
+                    'name' => $fixture['teams']['away']['name'],
+                    'logo' => $fixture['teams']['away']['logo'],
+                ],
+                'round' => $fixture['league']['round'] ?? null,
+                'season' => $fixture['league']['season'] ?? null,
+                'is_home_team' => $isHomeTeam,
+                'referee' => $fixture['fixture']['referee'] ?? null,
+            ];
+        }, $fixtures);
     }
 
-
-    private function findAndUpdateTeamApiId(Team $team, string $apiKey): ?int
+    /**
+     * Format fixture status for display
+     */
+    private function formatStatus(array $status): string
     {
-        try {
+        $long = $status['long'] ?? '';
+        $short = $status['short'] ?? '';
 
-            $response = Http::timeout(10)
-                ->get("https://www.thesportsdb.com/api/v1/json/{$apiKey}/searchteams.php", [
-                    't' => $team->name
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (isset($data['teams']) && is_array($data['teams']) && count($data['teams']) > 0) {
-
-                    $bestMatch = null;
-
-                    foreach ($data['teams'] as $apiTeam) {
-                        // Check if it's a soccer/football team
-                        if (isset($apiTeam['strSport']) &&
-                            in_array(strtolower($apiTeam['strSport']), ['soccer', 'football'])) {
-
-
-                            if (strtolower($apiTeam['strTeam']) === strtolower($team->name)) {
-                                $bestMatch = $apiTeam;
-                                break;
-                            }
-
-
-                            if (!$bestMatch) {
-                                $bestMatch = $apiTeam;
-                            }
-                        }
-                    }
-
-                    if ($bestMatch) {
-                        $apiTeamId = (int) $bestMatch['idTeam'];
-
-                        $team->update(['api_team_id' => $apiTeamId]);
-
-                        Log::info("Updated team {$team->name} with TheSportsDB ID: {$apiTeamId}");
-
-                        return $apiTeamId;
-                    }
-                }
-            }
-
-            return null;
-        } catch (\Exception $e) {
-            Log::error("Error finding TheSportsDB ID for team {$team->name}: " . $e->getMessage());
-            return null;
-        }
+        return match($short) {
+            'TBD' => 'To Be Determined',
+            'NS' => 'Not Started',
+            'PST' => 'Postponed',
+            'CANC' => 'Cancelled',
+            'SUSP' => 'Suspended',
+            default => $long ?: 'Scheduled'
+        };
     }
 }

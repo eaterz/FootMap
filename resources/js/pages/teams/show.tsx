@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Shield, Calendar, MapPin, ExternalLink, ArrowLeft, Users, Trophy, FileText, Clock, Info } from 'lucide-react';
+import { Shield, Calendar, MapPin, ExternalLink, ArrowLeft, Users, Trophy, FileText, Clock, Info, AlertCircle } from 'lucide-react';
 import Layout from '@/layouts/Layout';
 import FlagIcon from '@/components/FlagIcon';
 
@@ -28,26 +28,25 @@ interface Team {
 interface Match {
     id: number;
     date: string;
-    time: string;
     timestamp: number;
     venue: string;
     status: string;
     competition: string;
     competition_logo: string | null;
     home_team: {
-        id: number | null;
+        id: number;
         name: string;
         logo: string;
     };
     away_team: {
-        id: number | null;
+        id: number;
         name: string;
         logo: string;
     };
-    round: number | null;
+    round: string | null;
     season: string | null;
-    is_home_team: boolean; // Added this flag
-    current_team_name: string; // Added for reference
+    is_home_team: boolean;
+    referee: string | null;
 }
 
 interface TeamShowProps {
@@ -64,7 +63,7 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
         return `/storage/${logoPath}`;
     };
 
-    const formatMatchDate = (dateString: string, timeString: string) => {
+    const formatMatchDate = (dateString: string) => {
         if (!dateString) return 'TBA';
 
         const date = new Date(dateString);
@@ -75,19 +74,40 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
         const isToday = date.toDateString() === today.toDateString();
         const isTomorrow = date.toDateString() === tomorrow.toDateString();
 
-        const formattedTime = timeString || 'TBA';
+        const timeString = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
 
         if (isToday) {
-            return `Today at ${formattedTime}`;
+            return `Today at ${timeString}`;
         } else if (isTomorrow) {
-            return `Tomorrow at ${formattedTime}`;
+            return `Tomorrow at ${timeString}`;
         } else {
             return date.toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
-                year: 'numeric'
-            }) + (timeString ? ` at ${timeString}` : '');
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
         }
+    };
+
+    const getStatusBadgeColor = (status: string) => {
+        const lowerStatus = status.toLowerCase();
+        if (lowerStatus.includes('scheduled') || lowerStatus.includes('not started')) {
+            return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+        }
+        if (lowerStatus.includes('postponed')) {
+            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+        }
+        if (lowerStatus.includes('cancelled')) {
+            return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+        }
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
     };
 
     return (
@@ -192,95 +212,110 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
 
                                 {upcomingMatches.length > 0 ? (
                                     <div className="space-y-4">
-                                        {upcomingMatches.map((match) => {
-                                            // Use the is_home_team flag from the backend
-                                            const isHome = match.is_home_team;
-
-                                            return (
-                                                <div
-                                                    key={match.id}
-                                                    className="overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white transition-all hover:shadow-md dark:border-gray-700 dark:from-gray-700 dark:to-gray-800"
-                                                >
-                                                    {/* Match Header */}
-                                                    <div className="border-b border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-700">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2 text-sm">
-                                                                {match.competition_logo && (
-                                                                    <img
-                                                                        src={match.competition_logo}
-                                                                        alt={match.competition}
-                                                                        className="h-5 w-5 object-contain"
-                                                                    />
-                                                                )}
-                                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        {upcomingMatches.map((match) => (
+                                            <div
+                                                key={match.id}
+                                                className="overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white transition-all hover:shadow-lg dark:border-gray-700 dark:from-gray-700 dark:to-gray-800"
+                                            >
+                                                {/* Match Header */}
+                                                <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-700">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            {match.competition_logo && (
+                                                                <img
+                                                                    src={match.competition_logo}
+                                                                    alt={match.competition}
+                                                                    className="h-6 w-6 object-contain"
+                                                                />
+                                                            )}
+                                                            <div>
+                                                                <span className="font-semibold text-gray-900 dark:text-white">
                                                                     {match.competition}
-                                                                    {match.round && ` - Round ${match.round}`}
                                                                 </span>
+                                                                {match.round && (
+                                                                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                                                                        {match.round}
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                                                {match.status}
-                                                            </span>
                                                         </div>
+                                                        <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeColor(match.status)}`}>
+                                                            {match.status}
+                                                        </span>
                                                     </div>
+                                                </div>
 
-                                                    {/* Teams */}
-                                                    <div className="p-4">
-                                                        <div className="mb-4 flex items-center justify-between">
-                                                            {/* Home Team */}
-                                                            <div className={`flex flex-1 items-center gap-3 ${isHome ? 'font-bold' : ''}`}>
+                                                {/* Teams */}
+                                                <div className="p-6">
+                                                    <div className="mb-6 flex items-center justify-between gap-4">
+                                                        {/* Home Team */}
+                                                        <div className={`flex flex-1 items-center gap-4 ${match.is_home_team ? 'font-bold' : ''}`}>
+                                                            <div className="flex-shrink-0">
                                                                 {match.home_team.logo ? (
                                                                     <img
                                                                         src={match.home_team.logo}
                                                                         alt={match.home_team.name}
-                                                                        className="h-10 w-10 object-contain"
+                                                                        className="h-12 w-12 object-contain"
                                                                     />
                                                                 ) : (
-                                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                                                                        <Shield className="h-6 w-6 text-gray-400" />
+                                                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                                                        <Shield className="h-8 w-8 text-gray-400" />
                                                                     </div>
                                                                 )}
-                                                                <span className="text-gray-900 dark:text-white">
-                                                                    {match.home_team.name}
-                                                                </span>
                                                             </div>
+                                                            <span className="text-lg text-gray-900 dark:text-white">
+                                                                {match.home_team.name}
+                                                            </span>
+                                                        </div>
 
-                                                            {/* VS */}
-                                                            <div className="mx-4 text-sm font-bold text-gray-400">VS</div>
+                                                        {/* VS */}
+                                                        <div className="flex-shrink-0 rounded-lg bg-gradient-to-r from-green-100 to-blue-100 px-4 py-2 dark:from-green-900/30 dark:to-blue-900/30">
+                                                            <span className="text-lg font-bold text-gray-700 dark:text-gray-300">VS</span>
+                                                        </div>
 
-                                                            {/* Away Team */}
-                                                            <div className={`flex flex-1 flex-row-reverse items-center gap-3 ${!isHome ? 'font-bold' : ''}`}>
+                                                        {/* Away Team */}
+                                                        <div className={`flex flex-1 flex-row-reverse items-center gap-4 ${!match.is_home_team ? 'font-bold' : ''}`}>
+                                                            <div className="flex-shrink-0">
                                                                 {match.away_team.logo ? (
                                                                     <img
                                                                         src={match.away_team.logo}
                                                                         alt={match.away_team.name}
-                                                                        className="h-10 w-10 object-contain"
+                                                                        className="h-12 w-12 object-contain"
                                                                     />
                                                                 ) : (
-                                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                                                                        <Shield className="h-6 w-6 text-gray-400" />
+                                                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                                                        <Shield className="h-8 w-8 text-gray-400" />
                                                                     </div>
                                                                 )}
-                                                                <span className="text-right text-gray-900 dark:text-white">
-                                                                    {match.away_team.name}
-                                                                </span>
                                                             </div>
+                                                            <span className="text-right text-lg text-gray-900 dark:text-white">
+                                                                {match.away_team.name}
+                                                            </span>
                                                         </div>
+                                                    </div>
 
-                                                        {/* Match Details */}
-                                                        <div className="space-y-2 border-t border-gray-200 pt-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
-                                                            <div className="flex items-center gap-2">
+                                                    {/* Match Details */}
+                                                    <div className="space-y-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                                        <div className="flex items-center justify-between text-sm">
+                                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                                                 <Calendar className="h-4 w-4 text-purple-500" />
-                                                                <span>{formatMatchDate(match.date, match.time)}</span>
+                                                                <span>{formatMatchDate(match.date)}</span>
                                                             </div>
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                                                 <MapPin className="h-4 w-4 text-green-500" />
                                                                 <span>{match.venue}</span>
                                                             </div>
                                                         </div>
+                                                        {match.referee && (
+                                                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                                                <AlertCircle className="h-4 w-4 text-blue-500" />
+                                                                <span>Referee: {match.referee}</span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+                                        ))}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-12">
