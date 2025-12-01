@@ -11,32 +11,18 @@ class FootballDataService
     private string $apiKey;
     private string $baseUrl;
 
-    // Manual mapping of your teams to Football-Data.org team IDs
-    private array $teamMapping = [
-        'Manchester United' => 66,
-        'Liverpool FC' => 64,
-        'Liverpool' => 64,
-        'Real Madrid' => 86,
-        'FC Barcelona' => 81,
-        'Barcelona' => 81,
-        'Bayern Munich' => 5,
-        'Bayern München' => 5,
-        'Arsenal' => 57,
-        'Arsenal FC' => 57,
-        'Chelsea' => 61,
-        'Chelsea FC' => 61,
-        'Manchester City' => 65,
-        'Tottenham' => 73,
-        'Tottenham Hotspur' => 73,
-        'Juventus' => 109,
-        'AC Milan' => 98,
-        'Inter Milan' => 108,
-        'Paris Saint-Germain' => 524,
-        'PSG' => 524,
-        'Borussia Dortmund' => 4,
-        'Atletico Madrid' => 78,
-        'Atlético Madrid' => 78,
-        // Add more teams as needed
+    // Competition codes for major leagues
+    private array $competitionCodes = [
+        'PL',   // Premier League
+        'PD',   // La Liga
+        'BL1',  // Bundesliga
+        'SA',   // Serie A
+        'FL1',  // Ligue 1
+        'CL',   // Champions League
+        'DED',  // Eredivisie
+        'PPL',  // Primeira Liga (Portugal)
+        'BSA',  // Brasileirão
+        'CLI',  // Liga Profesional (Argentina)
     ];
 
     public function __construct()
@@ -46,36 +32,87 @@ class FootballDataService
     }
 
     /**
-     * Get team ID from mapping or search API
+     * Auto-discover team ID by searching across competitions
      */
-    public function getTeamId(string $teamName): ?int
+    public function findTeamId(string $teamName): ?int
     {
-        // First, check our manual mapping
-        if (isset($this->teamMapping[$teamName])) {
-            Log::info("Found team in mapping: {$teamName} -> {$this->teamMapping[$teamName]}");
-            return $this->teamMapping[$teamName];
+        $normalizedSearchName = $this->normalizeTeamName($teamName);
+
+        Log::info("Auto-searching for team: {$teamName} (normalized: {$normalizedSearchName})");
+
+        // Try each competition until we find a match
+        foreach ($this->competitionCodes as $code) {
+            $teams = $this->getTeamsFromCompetition($code);
+
+            foreach ($teams as $team) {
+                $normalizedApiName = $this->normalizeTeamName($team['name']);
+
+                // Check for exact match
+                if ($normalizedApiName === $normalizedSearchName) {
+                    Log::info("Found exact match: {$team['name']} (ID: {$team['id']}) in {$code}");
+                    return $team['id'];
+                }
+
+                // Check for partial match
+                if (str_contains($normalizedApiName, $normalizedSearchName) ||
+                    str_contains($normalizedSearchName, $normalizedApiName)) {
+                    Log::info("Found partial match: {$team['name']} (ID: {$team['id']}) in {$code}");
+                    return $team['id'];
+                }
+            }
         }
 
-        // If not in mapping, try to search (but this is unreliable)
-        Log::warning("Team not in mapping, attempting API search: {$teamName}");
+        Log::warning("No match found for team: {$teamName}");
         return null;
     }
 
     /**
-     * Get all competitions to find teams
+     * Normalize team name for better matching
+     */
+    private function normalizeTeamName(string $name): string
+    {
+        // Convert to lowercase
+        $normalized = strtolower($name);
+
+        // Remove common suffixes/prefixes
+        $patterns = [
+            '/\b(fc|cf|afc|bfc|cfc|dfc|fk|sc|ac|ss|as|rc|cd|ud|sd)\b/',
+            '/\bfootball club\b/',
+            '/\bclub\b/',
+            '/\bsoccer\b/',
+            '/\bsporting\b/',
+        ];
+
+        foreach ($patterns as $pattern) {
+            $normalized = preg_replace($pattern, '', $normalized);
+        }
+
+        // Remove extra spaces and trim
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+        $normalized = trim($normalized);
+
+        return $normalized;
+    }
+
+    /**
+     * Get all competitions
      */
     public function getAllCompetitions(): array
     {
         try {
-            $response = Http::withHeaders([
-                'X-Auth-Token' => $this->apiKey,
-            ])->get("{$this->baseUrl}/competitions");
+            $cacheKey = "football_data_all_competitions";
 
-            if ($response->successful()) {
-                return $response->json()['competitions'] ?? [];
-            }
+            return Cache::remember($cacheKey, now()->addDays(7), function () {
+                $response = Http::withHeaders([
+                    'X-Auth-Token' => $this->apiKey,
+                ])->get("{$this->baseUrl}/competitions");
 
-            return [];
+                if ($response->successful()) {
+                    return $response->json()['competitions'] ?? [];
+                }
+
+                return [];
+            });
         } catch (\Exception $e) {
             Log::error("Football-Data get competitions error: {$e->getMessage()}");
             return [];
@@ -88,26 +125,48 @@ class FootballDataService
     public function getTeamsFromCompetition(string $competitionCode): array
     {
         try {
-            $response = Http::withHeaders([
-                'X-Auth-Token' => $this->apiKey,
-            ])->get("{$this->baseUrl}/competitions/{$competitionCode}/teams");
+            $cacheKey = "football_data_teams_{$competitionCode}";
 
-            if ($response->successful()) {
-                $teams = $response->json()['teams'] ?? [];
+            return Cache::remember($cacheKey, now()->addDays(7), function () use ($competitionCode) {
+                $response = Http::withHeaders([
+                    'X-Auth-Token' => $this->apiKey,
+                ])->get("{$this->baseUrl}/competitions/{$competitionCode}/teams");
 
-                // Log teams for mapping
-                foreach ($teams as $team) {
-                    Log::info("Competition {$competitionCode} - Team: {$team['name']} (ID: {$team['id']})");
+                if ($response->successful()) {
+                    return $response->json()['teams'] ?? [];
                 }
 
-                return $teams;
-            }
-
-            return [];
+                return [];
+            });
         } catch (\Exception $e) {
-            Log::error("Football-Data get teams from competition error: {$e->getMessage()}");
+            Log::error("Football-Data get teams from competition {$competitionCode} error: {$e->getMessage()}");
             return [];
         }
+    }
+
+    /**
+     * Build comprehensive team database from all competitions
+     */
+    public function buildTeamDatabase(): array
+    {
+        $allTeams = [];
+
+        foreach ($this->competitionCodes as $code) {
+            $teams = $this->getTeamsFromCompetition($code);
+
+            foreach ($teams as $team) {
+                // Use team ID as key to avoid duplicates
+                $allTeams[$team['id']] = [
+                    'id' => $team['id'],
+                    'name' => $team['name'],
+                    'short_name' => $team['shortName'] ?? $team['name'],
+                    'tla' => $team['tla'] ?? '',
+                    'competition' => $code,
+                ];
+            }
+        }
+
+        return $allTeams;
     }
 
     /**
@@ -129,7 +188,6 @@ class FootballDataService
                     $data = $response->json();
 
                     if (isset($data['matches']) && is_array($data['matches'])) {
-                        // Take only the first $limit matches
                         return array_slice($data['matches'], 0, $limit);
                     }
                 }
@@ -165,6 +223,15 @@ class FootballDataService
             Log::error("Football-Data get team error: {$e->getMessage()}");
             return null;
         }
+    }
+
+    /**
+     * Verify if a team ID is valid
+     */
+    public function verifyTeamId(int $teamId): bool
+    {
+        $team = $this->getTeamById($teamId);
+        return $team !== null;
     }
 
     /**

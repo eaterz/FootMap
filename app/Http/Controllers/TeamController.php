@@ -75,11 +75,8 @@ class TeamController extends Controller
     {
         $team->load(['league.country', 'stadium']);
 
-        // Get or find Football-Data ID
-        if (!$team->football_data_id) {
-            $this->findAndUpdateFootballDataId($team);
-            $team->refresh(); // Reload the model
-        }
+        // Ensure the team has a Football-Data ID
+        $this->ensureFootballDataId($team);
 
         // Fetch upcoming matches
         $upcomingMatches = [];
@@ -122,21 +119,29 @@ class TeamController extends Controller
         ]);
     }
 
-    private function findAndUpdateFootballDataId(Team $team): void
+    /**
+     * Ensure the team has a Football-Data ID
+     */
+    private function ensureFootballDataId(Team $team): void
     {
+        // If team already has a Football-Data ID, skip
+        if ($team->football_data_id) {
+            return;
+        }
+
         try {
-            // Use the mapping to get the correct team ID
-            $teamId = $this->footballDataService->getTeamId($team->name);
+            // Auto-discover the team ID
+            $teamId = $this->footballDataService->findTeamId($team->name);
 
             if ($teamId) {
                 $team->update([
                     'football_data_id' => $teamId
                 ]);
 
-                Log::info("Updated Football-Data ID for team: {$team->name} -> {$teamId}");
+                Log::info("Auto-assigned Football-Data ID for team: {$team->name} -> {$teamId}");
             } else {
                 Log::warning("Could not find Football-Data ID for team: {$team->name}");
-                Log::warning("Please add this team to the \$teamMapping array in FootballDataService");
+                Log::warning("Team may not be in any of the tracked competitions");
             }
         } catch (\Exception $e) {
             Log::error("Error finding Football-Data ID for team {$team->name}: {$e->getMessage()}");
