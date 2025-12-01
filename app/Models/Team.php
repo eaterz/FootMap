@@ -17,7 +17,7 @@ class Team extends Model
         'founded_year',
         'website',
         'description',
-        'api_football_id',
+        'football_data_id',
     ];
 
     protected $casts = [

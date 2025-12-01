@@ -36,10 +36,16 @@ return [
         ],
     ],
 
+    // Keep old API for reference (optional)
     'api_football' => [
         'key' => env('API_FOOTBALL_KEY'),
         'base_url' => 'https://v3.football.api-sports.io',
     ],
 
+    // New Football-Data.org API
+    'football_data' => [
+        'key' => env('FOOTBALL_DATA_KEY'),
+        'base_url' => 'https://api.football-data.org/v4',
+    ],
 
 ];

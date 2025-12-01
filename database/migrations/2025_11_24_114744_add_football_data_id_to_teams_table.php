@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->integer('api_football_id')->nullable()->after('id');
-            $table->index('api_football_id');
+            $table->integer('football_data_id')->nullable()->after('id');
+            $table->index('football_data_id');
         });
     }
 
     public function down(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->dropIndex(['api_football_id']);
-            $table->dropColumn('api_football_id');
+            $table->dropIndex(['football_data_id']);
+            $table->dropColumn('football_data_id');
         });
     }
 };
