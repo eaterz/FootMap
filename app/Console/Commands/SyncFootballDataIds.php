@@ -132,7 +132,7 @@ class SyncFootballDataIds extends Command
 
             $progressBar->advance();
 
-            // Small delay to be respectful to the API
+
             if ($teams->count() > 1) {
                 usleep(500000); // 0.5 second
             }
