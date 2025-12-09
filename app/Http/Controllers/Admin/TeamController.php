@@ -6,14 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\League;
 use App\Models\Stadium;
+use App\Services\FootballDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TeamController extends Controller
 {
+    private FootballDataService $footballDataService;
+
+    public function __construct(FootballDataService $footballDataService)
+    {
+        $this->footballDataService = $footballDataService;
+    }
 
     public function index(): Response
     {
@@ -30,6 +38,7 @@ class TeamController extends Controller
                     'league' => $team->league?->name,
                     'country' => $team->league?->country?->name,
                     'stadium' => $team->stadium?->name,
+                    'football_data_id' => $team->football_data_id,
                     'created_at' => $team->created_at?->format('M d, Y'),
                 ];
             });
@@ -38,7 +47,6 @@ class TeamController extends Controller
             'teams' => $teams,
         ]);
     }
-
 
     public function create(): Response
     {
@@ -89,11 +97,36 @@ class TeamController extends Controller
             $validated['logo'] = $request->file('logo')->store('teams/logos', 'public');
         }
 
-        Team::create($validated);
+        // Create the team
+        $team = Team::create($validated);
 
-        return redirect()->route('admin.teams.index')->with('success', 'Team created successfully.');
+        // Automatically find and assign Football-Data ID
+        try {
+            $footballDataId = $this->footballDataService->findTeamId($team->name);
+
+            if ($footballDataId) {
+                $team->update(['football_data_id' => $footballDataId]);
+
+                Log::info("Successfully assigned Football-Data ID for team: {$team->name} -> {$footballDataId}");
+
+                return redirect()
+                    ->route('admin.teams.index')
+                    ->with('success', "Team created successfully! Football-Data API integrated (ID: {$footballDataId}).");
+            } else {
+                Log::warning("Could not find Football-Data ID for team: {$team->name}");
+
+                return redirect()
+                    ->route('admin.teams.index')
+                    ->with('warning', 'Team created successfully, but no matching team found in Football-Data API. Upcoming matches may not be available.');
+            }
+        } catch (\Exception $e) {
+            Log::error("Error finding Football-Data ID for team {$team->name}: {$e->getMessage()}");
+
+            return redirect()
+                ->route('admin.teams.index')
+                ->with('warning', 'Team created successfully, but there was an error connecting to Football-Data API. You can try syncing later.');
+        }
     }
-
 
     public function show(Team $team): Response
     {
@@ -109,12 +142,12 @@ class TeamController extends Controller
                 'league' => $team->league?->name,
                 'country' => $team->league?->country?->name,
                 'stadium' => $team->stadium?->name,
+                'football_data_id' => $team->football_data_id,
                 'created_at' => $team->created_at?->format('M d, Y H:i'),
                 'updated_at' => $team->updated_at?->format('M d, Y H:i'),
             ],
         ]);
     }
-
 
     public function edit(Team $team): Response
     {
@@ -153,12 +186,12 @@ class TeamController extends Controller
                 'logo_path' => $team->logo,
                 'founded_year' => $team->founded_year?->format('Y-m-d'),
                 'website' => $team->website,
+                'football_data_id' => $team->football_data_id,
             ],
             'leagues' => $leagues,
             'stadiums' => $stadiums,
         ]);
     }
-
 
     public function update(Request $request, Team $team): RedirectResponse
     {
@@ -171,6 +204,9 @@ class TeamController extends Controller
             'website' => 'nullable|url|max:250',
         ]);
 
+        $oldName = $team->name;
+        $nameChanged = $oldName !== $validated['name'];
+
         // Handle file upload
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
@@ -182,9 +218,38 @@ class TeamController extends Controller
 
         $team->update($validated);
 
-        return redirect()->route('admin.teams.index')->with('success', 'Team updated successfully.');
-    }
+        // If team name changed, try to find new Football-Data ID
+        if ($nameChanged) {
+            try {
+                $footballDataId = $this->footballDataService->findTeamId($team->name);
 
+                if ($footballDataId) {
+                    $team->update(['football_data_id' => $footballDataId]);
+
+                    Log::info("Updated Football-Data ID for renamed team: {$oldName} -> {$team->name} (ID: {$footballDataId})");
+
+                    return redirect()
+                        ->route('admin.teams.index')
+                        ->with('success', "Team updated successfully! Football-Data API re-synced (ID: {$footballDataId}).");
+                } else {
+                    // Clear the old football_data_id if no match found
+                    $team->update(['football_data_id' => null]);
+
+                    Log::warning("Could not find Football-Data ID for renamed team: {$team->name}");
+
+                    return redirect()
+                        ->route('admin.teams.index')
+                        ->with('warning', 'Team updated successfully, but no matching team found in Football-Data API.');
+                }
+            } catch (\Exception $e) {
+                Log::error("Error finding Football-Data ID for renamed team {$team->name}: {$e->getMessage()}");
+            }
+        }
+
+        return redirect()
+            ->route('admin.teams.index')
+            ->with('success', 'Team updated successfully.');
+    }
 
     public function destroy(Team $team): RedirectResponse
     {
@@ -195,6 +260,8 @@ class TeamController extends Controller
 
         $team->delete();
 
-        return redirect()->route('admin.teams.index')->with('success', 'Team deleted successfully.');
+        return redirect()
+            ->route('admin.teams.index')
+            ->with('success', 'Team deleted successfully.');
     }
 }

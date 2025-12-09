@@ -150,9 +150,9 @@ export default function Welcome({
                             className="group flex flex-col items-center gap-12 lg:flex-row"
                         >
                             <div className="flex-1 feature-left opacity-0 -translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                <div className="relative overflow-hidden rounded-2xl aspect-video shadow-2xl">
                                     <img
-                                        src="/club_map.jpg"
+                                        src="https://images.unsplash.com/photo-1522778526097-ce0a22ceb253?w=1200&q=80"
                                         alt="Global Football Coverage"
                                         className="w-full h-full object-cover"
                                     />
@@ -194,10 +194,10 @@ export default function Welcome({
                                 </p>
                             </div>
                             <div className="flex-1 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                <div className="relative overflow-hidden rounded-2xl aspect-video shadow-2xl">
                                     <img
-                                        src="/soccer_stadiums.jpg"
-                                        alt="Soccer Stadiums Map"
+                                        src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&q=80"
+                                        alt="Interactive Map with Location Pins"
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -212,9 +212,9 @@ export default function Welcome({
                             className="group flex flex-col items-center gap-12 lg:flex-row"
                         >
                             <div className="flex-1 feature-left opacity-0 -translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                <div className="relative overflow-hidden rounded-2xl aspect-video shadow-2xl">
                                     <img
-                                        src="https://images.mlssoccer.com/image/private/t_editorial_landscape_8_desktop_mobile/f_auto/mls-rbny/pagoemp8mybylicujnda.jpg"
+                                        src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&q=80"
                                         alt="Soccer Team Profile"
                                         className="w-full h-full object-cover"
                                     />
@@ -256,9 +256,9 @@ export default function Welcome({
                                 </p>
                             </div>
                             <div className="flex-1 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                <div className="relative overflow-hidden rounded-2xl aspect-video shadow-2xl">
                                     <img
-                                        src="https://cdn.myportfolio.com/4ac0e3df-29c1-4ae8-b05c-2e96da566030/56af55b4-fa14-4f60-b472-2486fb19354b_rw_1200.jpg?h=13adf80870c40bbfe1eec9088a8b35f4"
+                                        src="https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1200&q=80"
                                         alt="Football Search Illustration"
                                         className="w-full h-full object-cover"
                                     />
@@ -274,9 +274,9 @@ export default function Welcome({
                             className="group flex flex-col items-center gap-12 lg:flex-row"
                         >
                             <div className="flex-1 feature-left opacity-0 -translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                <div className="relative overflow-hidden rounded-2xl aspect-video shadow-2xl">
                                     <img
-                                        src="https://media1.thehungryjpeg.com/thumbs2/ori_3910836_0bn9r74p1cdqlslt845fk86d3cnwurh7tf1y5a4f_football-world-cup-schedule-soccer-calendar-for-matches-in-group-tab.jpg"
+                                        src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1200&q=80"
                                         alt="Football Match Schedule"
                                         className="w-full h-full object-cover"
                                     />
@@ -318,9 +318,9 @@ export default function Welcome({
                                 </p>
                             </div>
                             <div className="flex-1 feature-right opacity-0 translate-x-[3rem]">
-                                <div className="relative overflow-hidden rounded-2xl aspect-video">
+                                <div className="relative overflow-hidden rounded-2xl aspect-video shadow-2xl">
                                     <img
-                                        src="https://blog.grosvenorcasinos.com/wp-content/uploads/2019/01/Football_Leagues_1stProof.png"
+                                        src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=1200&q=80"
                                         alt="Football League Pyramid"
                                         className="w-full h-full object-cover"
                                     />

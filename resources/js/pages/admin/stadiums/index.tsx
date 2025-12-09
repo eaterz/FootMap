@@ -69,6 +69,7 @@ export default function Index({ stadiums }: Props) {
 
     const getImageUrl = (imagePath: string | null) => {
         if (!imagePath) return null;
+        if (imagePath.startsWith('http')) return imagePath;
         return `/storage/${imagePath}`;
     };
 
