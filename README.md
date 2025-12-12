@@ -22,7 +22,6 @@ npm install
 ### 2. Setup Environment
 ```bash
 cp .env.example .env
-php artisan key:generate
 ```
 
 ### 3. Configure `.env`
@@ -33,16 +32,22 @@ FOOTBALL_DATA_KEY=your_api_key_here
 ```
 **Get API Key**: https://www.football-data.org/
 
-**Sync Football-Data IDs**
+**Generate Encryption Key**
 ```bash
-php artisan teams:sync-football-data-ids
+php artisan key:generate
 ```
+
 
 ### 4. Setup Database
 ```bash
 touch database/database.sqlite
 php artisan migrate --seed
 php artisan storage:link
+```
+
+**Sync Football-Data IDs**
+```bash
+php artisan teams:sync-football-data-ids
 ```
 
 ### 5. Build and Run

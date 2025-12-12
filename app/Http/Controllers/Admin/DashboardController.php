@@ -34,10 +34,19 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(function ($team) {
+                $logo = null;
+                if ($team->logo) {
+                    if (filter_var($team->logo, FILTER_VALIDATE_URL)) {
+                        $logo = $team->logo;
+                    } else {
+                        $logo = asset('storage/' . $team->logo);
+                    }
+                }
+
                 return [
                     'id' => $team->id,
                     'name' => $team->name,
-                    'logo' => $team->logo,
+                    'logo' => $logo,
                     'country' => $team->country?->name,
                     'league' => $team->league?->name,
                     'stadium' => $team->stadium?->name,

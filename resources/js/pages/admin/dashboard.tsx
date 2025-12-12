@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/layouts/AdminLayout';
-import { Users, Shield, Database, Activity, MapPin, Globe2, Trophy } from 'lucide-react';
+import { Users, Shield, Activity, MapPin, Globe2, Trophy } from 'lucide-react';
 
 interface Stats {
     total_teams: number;
