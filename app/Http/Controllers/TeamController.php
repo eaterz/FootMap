@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\League;
 use App\Services\FootballDataService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,7 +33,10 @@ class TeamController extends Controller
             $query->where('league_id', $request->input('league'));
         }
 
-        $teams = $query->paginate(15)->through(function ($team) {
+        $user = Auth::user();
+        $favoriteTeamIds = $user ? $user->favoriteTeams()->pluck('team_id')->toArray() : [];
+
+        $teams = $query->paginate(15)->through(function ($team) use ($favoriteTeamIds) {
             return [
                 'id' => $team->id,
                 'name' => $team->name,
@@ -46,6 +50,7 @@ class TeamController extends Controller
                 'league_id' => $team->league_id,
                 'stadium' => $team->stadium?->name,
                 'stadium_city' => $team->stadium?->city,
+                'is_favorited' => in_array($team->id, $favoriteTeamIds),
             ];
         });
 
@@ -75,10 +80,10 @@ class TeamController extends Controller
     {
         $team->load(['league.country', 'stadium']);
 
-        // Ensure the team has a Football-Data ID
+
         $this->ensureFootballDataId($team);
 
-        // Fetch upcoming matches
+
         $upcomingMatches = [];
         if ($team->football_data_id) {
             Log::info("Fetching matches for team: {$team->name} (ID: {$team->football_data_id})");
@@ -94,6 +99,9 @@ class TeamController extends Controller
         } else {
             Log::warning("No Football-Data ID found for team: {$team->name}");
         }
+
+        $user = Auth::user();
+        $isFavorited = $user ? $user->favoriteTeams()->where('team_id', $team->id)->exists() : false;
 
         return Inertia::render('teams/show', [
             'team' => [
@@ -114,6 +122,7 @@ class TeamController extends Controller
                     'latitude' => $team->stadium?->latitude,
                     'longitude' => $team->stadium?->longitude,
                 ],
+                'is_favorited' => $isFavorited,
             ],
             'upcomingMatches' => $upcomingMatches,
         ]);
@@ -124,13 +133,13 @@ class TeamController extends Controller
      */
     private function ensureFootballDataId(Team $team): void
     {
-        // If team already has a Football-Data ID, skip
+
         if ($team->football_data_id) {
             return;
         }
 
         try {
-            // Auto-discover the team ID
+
             $teamId = $this->footballDataService->findTeamId($team->name);
 
             if ($teamId) {

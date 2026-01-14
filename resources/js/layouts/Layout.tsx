@@ -84,6 +84,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             >
                                 Map
                             </Link>
+                            <Link
+                                href="/favorites"
+                                className="text-sm font-medium text-gray-700 transition-colors hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                            >
+                                Favorites Teams
+                            </Link>
 
                             {/* Profile Dropdown */}
                             <div className="relative border-l border-gray-300 pl-6 dark:border-gray-600" ref={profileRef}>

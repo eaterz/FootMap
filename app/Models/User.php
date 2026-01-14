@@ -50,4 +50,9 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+    public function favoriteTeams()
+    {
+        return $this->belongsToMany(Team::class, 'favorite_teams')
+            ->withTimestamps();
+    }
 }
