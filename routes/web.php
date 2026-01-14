@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FavoriteTeamController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\StadiumController;
@@ -33,6 +34,12 @@ Route::middleware(['auth', 'verified', 'regular'])->group(function () {
 
     // Map routes
     Route::get('map', [MapController::class, 'index'])->name('map.index');
+
+    // Favorites routes
+    Route::get('/favorites', [FavoriteTeamController::class, 'index'])->name('favorites.index');
+    Route::post('/favorites/{team}', [FavoriteTeamController::class, 'store'])->name('favorites.store');
+    Route::post('/favorites/{team}/remove', [FavoriteTeamController::class, 'destroy'])->name('favorites.destroy');
+    Route::get('/favorites/check/{team}', [FavoriteTeamController::class, 'check'])->name('favorites.check');
 });
 
 require __DIR__.'/settings.php';

@@ -1,5 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
-import { Shield, Calendar, MapPin, ExternalLink, ArrowLeft, Users, Trophy, FileText, Clock, Info, AlertCircle } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Shield, Calendar, MapPin, ExternalLink, ArrowLeft, Users, Trophy, FileText, Clock, Info, AlertCircle, Star } from 'lucide-react';
+import { useState } from 'react';
+import axios from 'axios';
 import Layout from '@/layouts/Layout';
 import FlagIcon from '@/components/FlagIcon';
 
@@ -23,6 +25,7 @@ interface Team {
     country: string;
     country_flag: string;
     stadium: Stadium;
+    is_favorited?: boolean;
 }
 
 interface Match {
@@ -52,9 +55,50 @@ interface Match {
 interface TeamShowProps {
     team: Team;
     upcomingMatches: Match[];
+    auth: {
+        user: any;
+    };
 }
 
-export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
+export default function TeamShow({ team, upcomingMatches, auth }: TeamShowProps) {
+    const [isFavorited, setIsFavorited] = useState(team.is_favorited ?? false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const toggleFavorite = async () => {
+        if (!auth.user) {
+            router.visit('/login');
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            if (isFavorited) {
+
+                const response = await axios.post(`/favorites/${team.id}/remove`);
+                console.log('Remove response:', response.data);
+                setIsFavorited(false);
+            } else {
+
+                const response = await axios.post(`/favorites/${team.id}`);
+                console.log('Add response:', response.data);
+                setIsFavorited(true);
+            }
+        } catch (error: any) {
+            console.error('Error toggling favorite:', error);
+            console.error('Error response:', error.response?.data);
+
+            if (error.response?.status === 401) {
+                router.visit('/login');
+            } else {
+
+                alert(error.response?.data?.message || 'Failed to update favorite');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const getLogoUrl = (logoPath: string | null) => {
         if (!logoPath) return null;
         if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
@@ -150,34 +194,88 @@ export default function TeamShow({ team, upcomingMatches }: TeamShowProps) {
 
                             {/* Team Info */}
                             <div className="flex-1 text-center md:text-left">
-                                <h1 className="mb-3 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
-                                    {team.name}
-                                </h1>
-                                <div className="mb-4 flex flex-wrap items-center justify-center gap-4 md:justify-start">
-                                    <div className="flex items-center gap-2">
-                                        <FlagIcon countryName={team.country} className="h-5 w-8 rounded shadow-sm" />
-                                        <span className="text-lg text-gray-600 dark:text-gray-300">{team.country}</span>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h1 className="mb-3 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+                                            {team.name}
+                                        </h1>
+                                        <div className="mb-4 flex flex-wrap items-center justify-center gap-4 md:justify-start">
+                                            <div className="flex items-center gap-2">
+                                                <FlagIcon countryName={team.country} className="h-5 w-8 rounded shadow-sm" />
+                                                <span className="text-lg text-gray-600 dark:text-gray-300">{team.country}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                <Trophy className="h-5 w-5 text-blue-500" />
+                                                <span>{team.league}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                <Calendar className="h-5 w-5 text-purple-500" />
+                                                <span>Founded {team.founded_year}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                                        <Trophy className="h-5 w-5 text-blue-500" />
-                                        <span>{team.league}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                                        <Calendar className="h-5 w-5 text-purple-500" />
-                                        <span>Founded {team.founded_year}</span>
-                                    </div>
+
+                                    {/* Favorite Button */}
+                                    {auth.user && (
+                                        <button
+                                            onClick={toggleFavorite}
+                                            disabled={isLoading}
+                                            className={`flex-shrink-0 rounded-full p-3 transition-all ${
+                                                isLoading
+                                                    ? 'cursor-wait opacity-50'
+                                                    : 'hover:scale-110'
+                                            } ${
+                                                isFavorited
+                                                    ? 'bg-yellow-400 text-yellow-900 shadow-lg hover:bg-yellow-500'
+                                                    : 'bg-white text-gray-400 shadow-md hover:bg-yellow-50 hover:text-yellow-500 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700'
+                                            }`}
+                                            title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                                        >
+                                            <Star
+                                                className={`h-6 w-6 transition-all ${
+                                                    isFavorited ? 'fill-yellow-900' : ''
+                                                } ${isLoading ? 'animate-pulse' : ''}`}
+                                            />
+                                        </button>
+                                    )}
                                 </div>
-                                {team.website && (
-                                    <a
-                                        href={team.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                    >
-                                        <span>Visit Official Website</span>
-                                        <ExternalLink className="h-4 w-4" />
-                                    </a>
-                                )}
+
+                                <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+                                    {team.website && (
+                                        <a
+                                            href={team.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                        >
+                                            <span>Visit Official Website</span>
+                                            <ExternalLink className="h-4 w-4" />
+                                        </a>
+                                    )}
+
+                                    {auth.user && (
+                                        <button
+                                            onClick={toggleFavorite}
+                                            disabled={isLoading}
+                                            className={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 font-medium transition-all ${
+                                                isLoading
+                                                    ? 'cursor-wait opacity-50'
+                                                    : ''
+                                            } ${
+                                                isFavorited
+                                                    ? 'border-2 border-yellow-500 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30'
+                                                    : 'border-2 border-gray-300 bg-white text-gray-700 hover:border-yellow-500 hover:bg-yellow-50 hover:text-yellow-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-yellow-500 dark:hover:bg-yellow-900/20 dark:hover:text-yellow-400'
+                                            }`}
+                                        >
+                                            <Star
+                                                className={`h-5 w-5 ${isFavorited ? 'fill-yellow-700 dark:fill-yellow-400' : ''} ${
+                                                    isLoading ? 'animate-pulse' : ''
+                                                }`}
+                                            />
+                                            <span>{isFavorited ? 'Favorited' : 'Add to Favorites'}</span>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

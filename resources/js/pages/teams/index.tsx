@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Search, Shield, Calendar, MapPin, Users, ExternalLink, X, Filter, Trophy, FileText, Eye } from 'lucide-react';
+import { Search, Shield, Calendar, MapPin, Trophy, ExternalLink, X, Filter, FileText, Eye, Star } from 'lucide-react';
 import { useState, FormEvent } from 'react';
+import axios from 'axios';
 import Layout from '@/layouts/Layout';
 import FlagIcon from '@/components/FlagIcon';
 
@@ -23,6 +24,7 @@ interface Team {
     league_id: number;
     stadium: string;
     stadium_city: string;
+    is_favorited?: boolean;
 }
 
 interface PaginationLink {
@@ -47,12 +49,17 @@ interface TeamsIndexProps {
     };
     leagues: League[];
     filters: Filters;
+    auth: {
+        user: any;
+    };
 }
 
-export default function TeamsIndex({ teams, leagues, filters }: TeamsIndexProps) {
+export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndexProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [selectedLeague, setSelectedLeague] = useState(filters.league || '');
     const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+    const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
+    const [loadingFavorites, setLoadingFavorites] = useState<Record<number, boolean>>({});
 
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
@@ -73,6 +80,54 @@ export default function TeamsIndex({ teams, leagues, filters }: TeamsIndexProps)
             preserveState: true,
             preserveScroll: true,
         });
+    };
+
+    const toggleFavorite = async (e: React.MouseEvent, teamId: number, teamName: string) => {
+        e.stopPropagation();
+
+        if (!auth.user) {
+            router.visit('/login');
+            return;
+        }
+
+        setLoadingFavorites(prev => ({ ...prev, [teamId]: true }));
+
+        try {
+            const currentlyFavorited = isFavorited(teamId);
+
+            if (currentlyFavorited) {
+
+                const response = await axios.post(`/favorites/${teamId}/remove`);
+                console.log('Remove response:', response.data);
+                setFavoriteStates(prev => ({ ...prev, [teamId]: false }));
+            } else {
+
+                const response = await axios.post(`/favorites/${teamId}`);
+                console.log('Add response:', response.data);
+                setFavoriteStates(prev => ({ ...prev, [teamId]: true }));
+            }
+        } catch (error: any) {
+            console.error('Error toggling favorite:', error);
+            console.error('Error response:', error.response?.data);
+
+            if (error.response?.status === 401) {
+                router.visit('/login');
+            } else {
+
+                alert(error.response?.data?.message || 'Failed to update favorite');
+            }
+        } finally {
+            setLoadingFavorites(prev => ({ ...prev, [teamId]: false }));
+        }
+    };
+
+    const isFavorited = (teamId: number): boolean => {
+
+        if (teamId in favoriteStates) {
+            return favoriteStates[teamId];
+        }
+
+        return teams.data.find(t => t.id === teamId)?.is_favorited ?? false;
     };
 
     const getLogoUrl = (logoPath: string | null) => {
@@ -172,8 +227,32 @@ export default function TeamsIndex({ teams, leagues, filters }: TeamsIndexProps)
                                     <div
                                         key={team.id}
                                         onClick={() => setSelectedTeam(team)}
-                                        className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:scale-105 hover:shadow-2xl dark:border-gray-700 dark:bg-gray-800"
+                                        className="group relative cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:scale-105 hover:shadow-2xl dark:border-gray-700 dark:bg-gray-800"
                                     >
+                                        {/* Favorite Button */}
+                                        {auth.user && (
+                                            <button
+                                                onClick={(e) => toggleFavorite(e, team.id, team.name)}
+                                                disabled={loadingFavorites[team.id]}
+                                                className={`absolute right-3 top-3 z-10 rounded-full p-2 transition-all ${
+                                                    loadingFavorites[team.id]
+                                                        ? 'cursor-wait opacity-50'
+                                                        : 'hover:scale-110'
+                                                } ${
+                                                    isFavorited(team.id)
+                                                        ? 'bg-yellow-400 text-yellow-900 shadow-lg'
+                                                        : 'bg-white/90 text-gray-400 hover:bg-yellow-50 hover:text-yellow-500 dark:bg-gray-700/90 dark:text-gray-500 dark:hover:bg-gray-600'
+                                                }`}
+                                                title={isFavorited(team.id) ? 'Remove from favorites' : 'Add to favorites'}
+                                            >
+                                                <Star
+                                                    className={`h-5 w-5 transition-all ${
+                                                        isFavorited(team.id) ? 'fill-yellow-900' : ''
+                                                    } ${loadingFavorites[team.id] ? 'animate-pulse' : ''}`}
+                                                />
+                                            </button>
+                                        )}
+
                                         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
                                             <div className="absolute inset-0 flex items-center justify-center p-8">
                                                 {team.logo ? (
