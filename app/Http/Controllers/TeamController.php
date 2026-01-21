@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\League;
+use App\Models\Country;
 use App\Services\FootballDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,13 +25,22 @@ class TeamController extends Controller
     {
         $query = Team::with(['league.country', 'stadium']);
 
+        // Search filter
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where('name', 'like', "%{$search}%");
         }
 
+        // League filter
         if ($request->filled('league')) {
             $query->where('league_id', $request->input('league'));
+        }
+
+        // Country filter
+        if ($request->filled('country')) {
+            $query->whereHas('league', function ($q) use ($request) {
+                $q->where('country_id', $request->input('country'));
+            });
         }
 
         $user = Auth::user();
@@ -66,12 +76,19 @@ class TeamController extends Controller
                 ];
             });
 
+        // Get countries that have teams (through leagues)
+        $countries = Country::whereHas('leagues.teams')
+            ->orderBy('name')
+            ->get(['id', 'name', 'flag']);
+
         return Inertia::render('teams/index', [
             'teams' => $teams,
             'leagues' => $leagues,
+            'countries' => $countries,
             'filters' => [
                 'search' => $request->input('search'),
                 'league' => $request->input('league'),
+                'country' => $request->input('country'),
             ],
         ]);
     }
@@ -80,9 +97,7 @@ class TeamController extends Controller
     {
         $team->load(['league.country', 'stadium']);
 
-
         $this->ensureFootballDataId($team);
-
 
         $upcomingMatches = [];
         if ($team->football_data_id) {
@@ -133,13 +148,11 @@ class TeamController extends Controller
      */
     private function ensureFootballDataId(Team $team): void
     {
-
         if ($team->football_data_id) {
             return;
         }
 
         try {
-
             $teamId = $this->footballDataService->findTeamId($team->name);
 
             if ($teamId) {
