@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Search, Shield, Calendar, MapPin, Trophy, ExternalLink, X, Filter, FileText, Eye, Star } from 'lucide-react';
+import { Search, Shield, Calendar, MapPin, Trophy, ExternalLink, X, Filter, FileText, Eye, Star, Globe } from 'lucide-react';
 import { useState, FormEvent } from 'react';
 import axios from 'axios';
 import Layout from '@/layouts/Layout';
@@ -9,6 +9,12 @@ interface League {
     id: number;
     name: string;
     country: string;
+}
+
+interface Country {
+    id: number;
+    name: string;
+    flag: string;
 }
 
 interface Team {
@@ -36,6 +42,7 @@ interface PaginationLink {
 interface Filters {
     search?: string;
     league?: string;
+    country?: string;
 }
 
 interface TeamsIndexProps {
@@ -48,15 +55,17 @@ interface TeamsIndexProps {
         total: number;
     };
     leagues: League[];
+    countries: Country[];
     filters: Filters;
     auth: {
         user: any;
     };
 }
 
-export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndexProps) {
+export default function TeamsIndex({ teams, leagues, countries, filters, auth }: TeamsIndexProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [selectedLeague, setSelectedLeague] = useState(filters.league || '');
+    const [selectedCountry, setSelectedCountry] = useState(filters.country || '');
     const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
     const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
     const [loadingFavorites, setLoadingFavorites] = useState<Record<number, boolean>>({});
@@ -66,6 +75,7 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
         if (selectedLeague) params.append('league', selectedLeague);
+        if (selectedCountry) params.append('country', selectedCountry);
 
         router.get(`/teams?${params.toString()}`, {}, {
             preserveState: true,
@@ -76,6 +86,7 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
     const handleReset = () => {
         setSearchTerm('');
         setSelectedLeague('');
+        setSelectedCountry('');
         router.get('/teams', {}, {
             preserveState: true,
             preserveScroll: true,
@@ -96,12 +107,10 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
             const currentlyFavorited = isFavorited(teamId);
 
             if (currentlyFavorited) {
-
                 const response = await axios.post(`/favorites/${teamId}/remove`);
                 console.log('Remove response:', response.data);
                 setFavoriteStates(prev => ({ ...prev, [teamId]: false }));
             } else {
-
                 const response = await axios.post(`/favorites/${teamId}`);
                 console.log('Add response:', response.data);
                 setFavoriteStates(prev => ({ ...prev, [teamId]: true }));
@@ -113,7 +122,6 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
             if (error.response?.status === 401) {
                 router.visit('/login');
             } else {
-
                 alert(error.response?.data?.message || 'Failed to update favorite');
             }
         } finally {
@@ -122,11 +130,9 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
     };
 
     const isFavorited = (teamId: number): boolean => {
-
         if (teamId in favoriteStates) {
             return favoriteStates[teamId];
         }
-
         return teams.data.find(t => t.id === teamId)?.is_favorited ?? false;
     };
 
@@ -164,7 +170,8 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
                 {/* Filters Section */}
                 <div className="sticky top-16 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/80">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <form onSubmit={handleSearch} className="flex flex-col gap-4 md:flex-row md:items-center">
+                        <form onSubmit={handleSearch} className="flex flex-col gap-4">
+                            {/* Search Bar */}
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                                 <input
@@ -176,12 +183,43 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
                                 />
                             </div>
 
+                            {/* Filter Row */}
                             <div className="flex flex-wrap items-center gap-3">
+                                {/* Country Filter */}
+                                <div className="relative">
+                                    <Globe className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    <select
+                                        value={selectedCountry}
+                                        onChange={(e) => {
+                                            setSelectedCountry(e.target.value);
+                                            // Clear league filter when country changes
+                                            if (e.target.value) {
+                                                setSelectedLeague('');
+                                            }
+                                        }}
+                                        className="appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-gray-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                    >
+                                        <option value="">All Countries</option>
+                                        {countries.map((country) => (
+                                            <option key={country.id} value={country.id}>
+                                                {country.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* League Filter */}
                                 <div className="relative">
                                     <Filter className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                     <select
                                         value={selectedLeague}
-                                        onChange={(e) => setSelectedLeague(e.target.value)}
+                                        onChange={(e) => {
+                                            setSelectedLeague(e.target.value);
+                                            // Clear country filter when league changes
+                                            if (e.target.value) {
+                                                setSelectedCountry('');
+                                            }
+                                        }}
                                         className="appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-gray-900 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                                     >
                                         <option value="">All Leagues</option>
@@ -200,7 +238,7 @@ export default function TeamsIndex({ teams, leagues, filters, auth }: TeamsIndex
                                     Apply
                                 </button>
 
-                                {(searchTerm || selectedLeague) && (
+                                {(searchTerm || selectedLeague || selectedCountry) && (
                                     <button
                                         type="button"
                                         onClick={handleReset}
